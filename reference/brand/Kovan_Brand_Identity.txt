@@ -1,0 +1,143 @@
+Kovan Labs Brand Identity Kit
+
+1. Brand Core
+
+Personality
+
+Innovative: Forward-thinking and cutting-edge.
+
+Trustworthy: Reliable and professional.
+
+Collaborative: Engaging and interactive.
+
+Voice & Tone
+
+Style: Professional yet approachable; clear, direct, and results-oriented.  
+
+Design Philosophy: Minimalist, modern, user-centric, and intuitive. Balances creativity with clarity.
+
+2. Visual Identity
+
+Logo Usage
+
+Placement: Preferred positions are top left, bottom left, or bottom right.
+
+Horizontal Logo: Best used at the top.
+
+Vertical Logo: Best used at the bottom.
+
+Clear Space: Maintain a minimum of 48px clear space around the logo.
+
+Minimum Size: Minimum width 250px – 300px (height proportionate).
+
+Restrictions:
+
+Do not alter colors, stretch, apply effects, or add elements.
+
+Do not place over complex or distracting backgrounds.
+
+Use monochrome variants only when necessary for contrast.
+
+Color Palette
+
+Primary Brand Colors
+
+Red: #EF3829
+
+Green: #00A95C
+
+Yellow: #FDB917
+
+Blue: #0076BE
+
+Note: Gradients must align with these brand colors and maintain visual clarity.
+
+Typography Colors
+
+Light Backgrounds:
+
+Title: #000000 (Black)
+
+Subtitles & Body: #808080 (Gray)
+
+Dark Backgrounds:
+
+Title & Body: #FFFFFF (White)
+
+Contrast Standards (WCAG Compliance)
+
+Standard Text: Minimum 4.5:1 contrast ratio.
+
+Large/Bold Text (18pt+): Minimum 3:1 contrast ratio.
+
+Typography
+
+Heading Font: Poppins
+
+Body Font: Inter
+
+Styling:
+
+Casing: Sentence case is preferred for consistency.
+
+Avoid: Decorative or overly stylized fonts.
+
+Spacing:
+
+Headlines & Subtitles: Minimum 8px spacing.
+
+Body Text & Elements: Minimum 16px spacing.
+
+3. Design System & Layout
+
+Grid & Spacing
+
+A structured grid system is required to enhance visual alignment.
+
+Margins: Minimum 52px on all sides.
+
+Gutter Spacing: 20px.
+
+Alignment
+
+Titles/Headings: Left-aligned or center-aligned.
+
+Subtitles: Must follow the same alignment as the title.
+
+Body Text: Generally left-aligned for readability; justified for formal documents or text blocks.
+
+Shapes & Elements
+
+Style: All shapes and graphic elements must align with the brand’s design system.
+
+Color Usage: Use only brand colors or brand-aligned gradients.
+
+Consistency: Graphics, illustrations, and patterns should maintain uniformity across all media.
+
+4. Imagery Guidelines
+
+Visual Style
+
+Atmosphere: Clean, professional, and authentic.
+
+Quality: High-resolution images are mandatory to ensure clarity.
+
+Grading: Maintain a consistent color grading style across all visuals.
+
+Dos
+
+Layouts: Minimalist and structured; prioritize clarity.
+
+Backgrounds: Solid colors or subtle gradients.
+
+Subjects: Professional headshots and real office imagery to show credibility.
+
+Data: Simple infographics and data visuals for explaining services or results.
+
+Don'ts
+
+Avoid: Overly decorative backgrounds or clutter (Professional > Flashy).
+
+Avoid: Low-contrast text that blends into images.
+
+Avoid: Casual, over-stylized, or unrelated stock photography.
