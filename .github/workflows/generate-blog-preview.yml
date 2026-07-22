@@ -1,0 +1,70 @@
+name: Generate blog preview
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - "content/**/*.md"
+  pull_request:
+    paths:
+      - "content/**/*.md"
+  workflow_dispatch:
+
+jobs:
+  generate:
+    name: Generate HTML preview from Markdown
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Detect changed Markdown files
+        id: changed
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base_sha="${{ github.event.pull_request.base.sha }}"
+            head_sha="${{ github.event.pull_request.head.sha }}"
+          else
+            base_sha="${{ github.event.before }}"
+            head_sha="${{ github.sha }}"
+          fi
+
+          if [ "$base_sha" = "0000000000000000000000000000000000000000" ]; then
+            git ls-files 'content/**/*.md' > changed-markdown.txt
+          else
+            git diff --name-only "$base_sha" "$head_sha" -- 'content/**/*.md' > changed-markdown.txt
+          fi
+
+          if [ ! -s changed-markdown.txt ]; then
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+            echo "No changed Markdown files found."
+          else
+            echo "has_files=true" >> "$GITHUB_OUTPUT"
+            echo "Changed Markdown files:"
+            cat changed-markdown.txt
+          fi
+
+      - name: Generate blog previews
+        if: steps.changed.outputs.has_files == 'true'
+        shell: bash
+        run: |
+          python scripts/generate_blog_preview.py $(cat changed-markdown.txt)
+
+      - name: Upload generated previews
+        if: steps.changed.outputs.has_files == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-blog-previews
+          path: generated-blog-previews/*.html
+          if-no-files-found: error
+
