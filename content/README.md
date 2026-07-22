@@ -1,20 +1,14 @@
-# Blog content intake
+# Blog Markdown source
 
-Use this folder when a teammate gives blog content as a Markdown file.
+This area holds Markdown source content used to generate a structured blog.
 
-## Folder convention
+Each blog source should include:
 
-Create one folder per blog:
+- A Markdown file with the main content
+- Any images referenced by the Markdown
+- Optional frontmatter for details such as title, author, date, and tags
 
-```text
-content/
-  blog-slug/
-    content.md
-    images/
-      example-image.png
-```
-
-The source Markdown file should be named `content.md`. Images used by that Markdown should go in the same blog folder, preferably inside `images/`.
+The Markdown does not need to follow the final blog template. The blog generator will read the source content and convert it into the approved blog structure.
 
 ## How to reference images
 
@@ -32,11 +26,6 @@ External image URLs are also allowed when the image is publicly accessible:
 
 When the blog is generated, repo-local images can be copied into the blog output and the links can be updated automatically.
 
-## Suggested Git workflow
+## Blog generation
 
-1. Create a branch for the blog content, for example `blog-md-intake` or `blog-content-ai-agents`.
-2. Add the teammate's Markdown at `content/<blog-slug>/content.md`.
-3. Add any images at `content/<blog-slug>/images/`.
-4. Generate the blog from that branch and Markdown path.
-5. Keep the original Markdown unchanged, and save the generated blog separately.
-
+To generate a blog, provide the source branch and Markdown file path. The generator should validate that the file exists, read the Markdown, collect referenced images when available, and save the generated blog separately from the original source.
