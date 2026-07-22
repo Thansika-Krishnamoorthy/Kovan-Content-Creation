@@ -27,30 +27,24 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Detect changed Markdown files
+      - name: Detect Markdown files in the latest commit
         id: changed
         shell: bash
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            base_sha="${{ github.event.pull_request.base.sha }}"
-            head_sha="${{ github.event.pull_request.head.sha }}"
+            target_sha="${{ github.event.pull_request.head.sha }}"
           else
-            base_sha="${{ github.event.before }}"
-            head_sha="${{ github.sha }}"
+            target_sha="${{ github.sha }}"
           fi
 
-          if [ "$base_sha" = "0000000000000000000000000000000000000000" ]; then
-            git ls-files 'content/**/*.md' > changed-markdown.txt
-          else
-            git diff --name-only "$base_sha" "$head_sha" -- 'content/**/*.md' > changed-markdown.txt
-          fi
+          git diff-tree --no-commit-id --name-only --diff-filter=AM -r "$target_sha" -- 'content/**/*.md' > changed-markdown.txt
 
           if [ ! -s changed-markdown.txt ]; then
             echo "has_files=false" >> "$GITHUB_OUTPUT"
-            echo "No changed Markdown files found."
+            echo "No added or modified Markdown files found in the latest commit."
           else
             echo "has_files=true" >> "$GITHUB_OUTPUT"
-            echo "Changed Markdown files:"
+            echo "Markdown files added or modified in the latest commit:"
             cat changed-markdown.txt
           fi
 
@@ -67,4 +61,3 @@ jobs:
           name: generated-blog-previews
           path: generated-blog-previews/*.html
           if-no-files-found: error
-
