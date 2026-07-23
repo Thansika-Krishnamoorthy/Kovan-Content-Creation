@@ -1,31 +1,49 @@
-# Blog Markdown source
+# Blog content intake
 
-This area holds Markdown source content used to generate a structured blog.
+Add each new blog source as a Markdown file below `content/`. The rendering workflow reads the file, keeps it unchanged, and creates a separate HTML preview from one of the Kovan blog templates.
 
-Each blog source should include:
-
-- A Markdown file with the main content
-- Any images referenced by the Markdown
-- Optional frontmatter for details such as title, author, date, and tags
-
-The Markdown does not need to follow the final blog template. The blog generator will read the source content and convert it into the approved blog structure.
-
-## How to reference images
-
-Use normal Markdown image syntax:
+Optional frontmatter controls the page metadata and template:
 
 ```md
-![Short image description](images/example-image.png)
+---
+title: How AI agents are changing software development
+author: Kovan Labs
+date: 2026-07-23
+category: Technology
+summary: A short description used in the page banner and search metadata.
+template: conventional
+---
 ```
 
-External image URLs are also allowed when the image is publicly accessible:
+Supported template values are `conventional`, `volume`, and `radar`. When `template` is omitted, the renderer selects one from the title and defaults to `conventional`.
+
+Use normal Markdown for headings, paragraphs, lists, links, blockquotes, code blocks, tables, and images. Give every image useful alt text:
 
 ```md
-![Diagram title](https://example.com/diagram.png)
+![Diagram explaining the workflow](images/workflow.png)
 ```
 
-When the blog is generated, repo-local images can be copied into the blog output and the links can be updated automatically.
+Local image paths are resolved relative to the Markdown file and copied beside the generated preview. The GitHub Actions preview also downloads valid public images referenced with `http` or `https`.
 
-## Blog generation
+## Render locally
 
-To generate a blog, provide the source branch and Markdown file path. The generator should validate that the file exists, read the Markdown, collect referenced images when available, and save the generated blog separately from the original source.
+Let the renderer select the template:
+
+```bash
+python -m pip install --requirement requirements-blog-renderer.txt
+python scripts/render_blog.py content/path/article.md
+```
+
+Use a specific template when needed:
+
+```bash
+python scripts/render_conventional_blog.py content/path/article.md
+python scripts/render_volume_blog.py content/path/article.md
+python scripts/render_radar_blog.py content/path/article.md
+```
+
+Generated files are written separately under `output/website/`. Add `--download-remote-images` to save public Markdown images locally, or `--overwrite` to intentionally replace an existing output.
+
+## GitHub Actions preview
+
+When a commit adds a Markdown file under `content/` on a non-main branch or pull request, the workflow renders it and uploads `rendered-blog-previews` as a downloadable Actions artifact. The workflow never modifies the Markdown and does not commit or push the generated HTML.

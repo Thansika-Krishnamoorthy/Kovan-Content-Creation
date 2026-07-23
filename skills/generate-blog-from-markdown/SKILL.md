@@ -1,13 +1,13 @@
 ---
 name: generate-blog-from-markdown
-description: Generate a Kovan Labs blog from a Markdown source file stored in this repository. Use when the user provides or references a Git branch and .md path, asks to convert Markdown content into a blog, or wants blog images collected from Markdown references without requiring separate image handoff. This skill validates the source file, preserves the original Markdown, resolves repo-local and allowed public images, then uses the Kovan blog template workflow to save a finished HTML blog.
+description: Render or editorially adapt a Kovan Labs blog from a Markdown source file stored in this repository. Use when the user provides or references a Git branch and .md path, asks to create a template-based website from Markdown, or wants blog images collected from Markdown references without requiring separate image handoff. This skill validates the source file, preserves the original Markdown, resolves repo-local and allowed public images, then uses the Kovan blog template workflow to save a finished HTML blog.
 ---
 
 # Generate Blog From Markdown
 
 Use this skill when a blog must be created from a `.md` file in the current repository.
 
-This is a skill-only workflow. Do not require a separate generator script unless the user explicitly asks for one.
+Use the repository renderer for deterministic, content-preserving previews. Use the manual skill workflow when the user asks for editorial revision or design judgment.
 
 ## Required Inputs
 
@@ -19,6 +19,26 @@ Gather or infer:
 - Optional preferred blog type: conventional, volume, or radar
 
 If the branch is omitted, use the current branch. If the Markdown path is omitted and exactly one likely `.md` source exists under `content/`, use it and state that assumption. If multiple likely files exist, ask the user which one to use.
+
+### Find the latest Markdown file added to Git
+
+When the user asks for the latest Markdown file and does not provide a path, use committed Git history rather than filesystem modification times. Confirm GitHub CLI access, then find the newest file added under `content/`:
+
+```bash
+gh auth status
+git log --diff-filter=A --name-only --format= -- ':(glob)content/**/*.md' \
+  | awk 'NF && $0 != "content/README.md" { print; exit }'
+```
+
+`--diff-filter=A` limits results to files added to Git. Because `git log` is newest-first, the first eligible path is the latest addition. Do not use `find` timestamps for this decision.
+
+If the newest commit added multiple eligible `.md` files, list the files added by that commit and ask the user which one to use:
+
+```bash
+git show --diff-filter=A --name-only --format= HEAD -- ':(glob)content/**/*.md'
+```
+
+Use `gh repo view` when repository or remote confirmation is needed. Do not fetch, switch branches, commit, or push merely to identify the source file.
 
 ## Source Validation
 
@@ -52,7 +72,10 @@ Extract useful metadata from frontmatter when present:
 
 If frontmatter is missing, infer reasonable values from the H1, first paragraph, file path, and current date. Leave a clear placeholder only when a value cannot be inferred safely.
 
-Treat the Markdown as source material, not as the final article structure. Keep the author's intent and factual claims, but improve flow, headings, clarity, and completeness when converting it into the Kovan blog format.
+Choose the mode from the user's request:
+
+- **Render mode:** Preserve the supplied body content, ordering, headings, links, images, tables, lists, quotations, and code. Only translate Markdown syntax into browser-readable HTML and place it inside the selected Kovan template. Do not add, remove, rewrite, or rearrange article content.
+- **Editorial mode:** Treat the Markdown as source material. Keep the author's intent and factual claims, but improve flow, headings, clarity, and completeness when the user explicitly asks for writing or editorial improvement.
 
 ## Image Handling
 
@@ -81,6 +104,22 @@ Every genuine content image needs useful alt text. Decorative Kovan brand assets
 ## Blog Generation
 
 Use the existing `write-kovan-blog` skill for the branded HTML rules, template selection, editorial standards, SEO checks, brand assets, and validation.
+
+For render mode, run the dispatcher:
+
+```bash
+python scripts/render_blog.py --output-dir output/website <content/path.md>
+```
+
+The dispatcher reads optional `template` frontmatter and otherwise applies the title-based template rules. The explicit template entry points are:
+
+```bash
+python scripts/render_conventional_blog.py <content/path.md>
+python scripts/render_volume_blog.py <content/path.md>
+python scripts/render_radar_blog.py <content/path.md>
+```
+
+Add `--download-remote-images` only when public Markdown image URLs should be saved locally. Local Markdown images are always validated and copied next to the generated HTML. Add `--overwrite` only when replacing an existing output is intended.
 
 Follow this handoff:
 
@@ -113,4 +152,3 @@ Before reporting completion:
 - Links are valid where they can be checked.
 - Output path is reported to the user.
 - Any assumptions are stated briefly.
-

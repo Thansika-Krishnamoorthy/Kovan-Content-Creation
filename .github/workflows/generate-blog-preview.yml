@@ -1,4 +1,4 @@
-name: Generate blog preview
+name: Render Markdown blog previews
 
 on:
   push:
@@ -6,18 +6,29 @@ on:
       - main
     paths:
       - "content/**/*.md"
+      - "templates/blog-*.html"
+      - "scripts/blog_renderer/**"
+      - "scripts/render_*blog.py"
+      - "requirements-blog-renderer.txt"
   pull_request:
     paths:
       - "content/**/*.md"
+      - "templates/blog-*.html"
+      - "scripts/blog_renderer/**"
+      - "scripts/render_*blog.py"
+      - "requirements-blog-renderer.txt"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  generate:
-    name: Generate HTML preview from Markdown
+  render:
+    name: Render added Markdown with Kovan templates
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -26,38 +37,67 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-blog-renderer.txt
 
-      - name: Detect Markdown files in the latest commit
-        id: changed
+      - name: Install renderer dependencies
+        run: python -m pip install --requirement requirements-blog-renderer.txt
+
+      - name: Find Markdown files added in the target commit
+        id: markdown
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             target_sha="${{ github.event.pull_request.head.sha }}"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            target_sha="$(git log -1 --format=%H --diff-filter=A -- ':(glob)content/**/*.md')"
           else
             target_sha="${{ github.sha }}"
           fi
 
-          git diff-tree --no-commit-id --name-only --diff-filter=AM -r "$target_sha" -- 'content/**/*.md' > changed-markdown.txt
-
-          if [ ! -s changed-markdown.txt ]; then
-            echo "has_files=false" >> "$GITHUB_OUTPUT"
-            echo "No added or modified Markdown files found in the latest commit."
-          else
-            echo "has_files=true" >> "$GITHUB_OUTPUT"
-            echo "Markdown files added or modified in the latest commit:"
-            cat changed-markdown.txt
+          if [[ -z "$target_sha" ]]; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-      - name: Generate blog previews
-        if: steps.changed.outputs.has_files == 'true'
+          git diff-tree --root --no-commit-id --name-only --diff-filter=A -r \
+            "$target_sha" -- ':(glob)content/**/*.md' \
+            | awk 'NF && $0 != "content/README.md"' > added-markdown.txt
+
+          if [[ -s added-markdown.txt ]]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "Markdown files to render:"
+            sed 's/^/- /' added-markdown.txt
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "No newly added content Markdown files were found."
+          fi
+
+      - name: Render HTML previews
+        if: steps.markdown.outputs.found == 'true'
         shell: bash
         run: |
-          python scripts/generate_blog_preview.py $(cat changed-markdown.txt)
+          mapfile -t markdown_files < added-markdown.txt
+          python scripts/render_blog.py \
+            --output-dir generated-blog-previews \
+            --download-remote-images \
+            --overwrite \
+            "${markdown_files[@]}"
 
-      - name: Upload generated previews
-        if: steps.changed.outputs.has_files == 'true'
+      - name: Validate renderer
+        run: python -m unittest discover -s tests -p "test_blog_renderer.py"
+
+      - name: Upload rendered website preview
+        if: steps.markdown.outputs.found == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: generated-blog-previews
-          path: generated-blog-previews/*.html
+          name: rendered-blog-previews
+          path: |
+            generated-blog-previews/
+            05 Brand Assets/logo_horizontal.png
+            05 Brand Assets/logo_mono_white.png
+            05 Brand Assets/graphic_dotwave.png
+            05 Brand Assets/graphic_rings.png
+            05 Brand Assets/graphic_spark.png
           if-no-files-found: error
+          retention-days: 14
