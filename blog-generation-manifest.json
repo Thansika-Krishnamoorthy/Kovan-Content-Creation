@@ -1,4 +1,12 @@
 {
-  "sources": {},
+  "sources": {
+    "content/automated-markdown-rendering/content.md": {
+      "last_generated": "2026-08-07",
+      "output_file": "generated-blog-previews/how-kovan-labs-renders-blogs-automatically.html",
+      "source_hash": "26b697c38f100c5ee2fd93e64f8a1c47a1030b70c58ee41487fbbe7c0dcce665",
+      "template": "conventional",
+      "title": "How Kovan Labs Renders Blogs Automatically"
+    }
+  },
   "version": 1
 }
