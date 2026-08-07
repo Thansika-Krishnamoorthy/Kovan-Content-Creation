@@ -1,0 +1,13 @@
+[Unit]
+Description=Kovan poster scheduled database query and image generation
+Wants=network-online.target kovan-poster-api.service
+Requires=kovan-poster-api.service
+After=network-online.target kovan-poster-api.service
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/bash -lc 'for i in 1 2 3 4 5; do if curl -sfS http://127.0.0.1:8000/health >/dev/null 2>&1; then exit 0; fi; sleep 1; done; echo "API not responding on http://127.0.0.1:8000" >&2; exit 1'
+ExecStart=/bin/bash -lc 'cd "/home/thansika/Documents/Content creation" && set -a && source .env.poster-automation && set +a && curl -sfS -X POST "$POSTER_SCHEDULE_URL" -H "Content-Type: application/json" -H "x-poster-schedule-secret: $POSTER_SCHEDULE_SECRET" -d "{}"'
+Environment=PYTHONUNBUFFERED=1
+StandardOutput=journal
+StandardError=journal

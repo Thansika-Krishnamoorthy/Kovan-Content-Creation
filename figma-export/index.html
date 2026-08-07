@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Reusable Kovan Labs event poster templates">
+  <title>Kovan Labs poster templates</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="poster-templates.css">
+</head>
+<body>
+  <header class="toolbar">
+    <div>
+      <strong>Event poster templates</strong>
+      <span>Edit the details, choose a platform size, then save the poster as a PNG.</span>
+    </div>
+    <label>Poster
+      <select id="poster-picker">
+        <option value="birthday">Birthday</option>
+        <option value="hiring">Hiring</option>
+        <option value="anniversary">Work anniversary</option>
+        <option value="festival">Festival / greeting</option>
+        <option value="company">Company event</option>
+      </select>
+    </label>
+    <label>Platform size
+      <select id="size-picker">
+        <option value="1080x1350">Instagram / LinkedIn portrait · 4:5</option>
+        <option value="1080x1080">Instagram / LinkedIn square · 1:1</option>
+        <option value="1080x1920">Instagram / Facebook story · 9:16</option>
+        <option value="1200x1500">Facebook portrait · 4:5</option>
+      </select>
+    </label>
+    <button id="download-poster" type="button">Save as PNG</button>
+    <button id="print-poster" type="button">Print selected poster</button>
+  </header>
+
+  <main class="workspace">
+    <aside class="editor" aria-label="Poster content editor">
+      <h1>Poster details</h1>
+      <p>The controls change to match the selected template.</p>
+      <p class="export-note">Every export reaches the canvas edges. Content-safe templates are cropped; other layouts extend the matching grid background so no logo, message, or call-to-action is lost.</p>
+      <div id="editor-fields"></div>
+      <label class="file-field">Person photo
+        <input id="photo-input" type="file" accept="image/*">
+        <small>Used by the work-anniversary template.</small>
+      </label>
+    </aside>
+
+    <p id="export-status" class="export-status" role="status" aria-live="polite"></p>
+
+    <section class="posters" aria-label="Poster previews">
+      <article class="poster poster--birthday is-selected" data-poster="birthday">
+        <div class="brand-lockup"><img src="../reference/logo/kovan_logo_square.jpg" alt=""><span>Kovan Labs</span></div>
+        <img class="confetti confetti--left" src="images/node-84.png" alt="">
+        <img class="confetti confetti--right" src="images/node-84.png" alt="">
+        <div class="birthday-copy">
+          <span class="eyebrow" data-field="kicker">Happy</span>
+          <h2 data-field="title">Birthday</h2>
+          <h3 data-field="name">Name Here</h3>
+          <p data-field="message">May this year bring you even more success and happiness.</p>
+        </div>
+        <svg class="birthday-footer" viewBox="0 0 540 285" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <clipPath id="birthday-wave-clip">
+              <path d="M0 92C25 98 42 72 72 68C105 63 119 86 151 74C178 65 184 42 207 38C238 32 248 84 283 88C323 94 330 67 354 58C382 47 395 91 431 89C463 87 481 70 540 77V285H0Z"/>
+            </clipPath>
+          </defs>
+          <g clip-path="url(#birthday-wave-clip)">
+            <rect width="540" height="285" fill="#FDB917"/>
+            <svg class="birthday-pattern" x="38" y="20" width="464" height="254" viewBox="0 0 799 450" preserveAspectRatio="none" overflow="hidden">
+              <image href="../Group%2027.svg" width="799" height="1247"/>
+            </svg>
+          </g>
+        </svg>
+      </article>
+
+      <article class="poster poster--hiring" data-poster="hiring">
+        <div class="brand-lockup brand-lockup--left"><img src="../reference/logo/kovan_logo_square.jpg" alt=""><span>Kovan Labs</span></div>
+        <div class="hiring-copy">
+          <h2 data-field="title">We’re<br>Hiring</h2>
+          <h3 data-field="role">Role Here</h3>
+          <div class="job-meta"><span data-field="experience">2+ years</span><span data-field="mode">Hybrid mode</span></div>
+        </div>
+        <img class="briefcase" src="images/job-1-337.png" alt="Leather work briefcase">
+        <div class="hiring-cta">
+          <i aria-hidden="true"></i>
+          <p data-field="message">If you’re the right fit, <strong>apply now!</strong><br>Send your CV to <strong>careers@kovanlabs.com</strong></p>
+        </div>
+      </article>
+
+      <article class="poster poster--anniversary" data-poster="anniversary">
+        <div class="brand-lockup"><img src="../reference/logo/kovan_logo_square.jpg" alt=""><span>Kovan Labs</span></div>
+        <div class="anniversary-copy">
+          <span class="eyebrow" data-field="kicker">Happy</span>
+          <h2 data-field="title">Work Anniversary</h2>
+        </div>
+        <div class="photo-stack">
+          <div class="blue-card"></div>
+          <figure><img data-photo src="images/image-190.png" alt="Employee portrait"></figure>
+          <i class="triangle triangle--left"></i><i class="triangle triangle--right"></i>
+        </div>
+        <div class="anniversary-message">
+          <h3 data-field="name">Name Here</h3>
+          <strong data-field="years">Cheers to 1 year!</strong>
+          <p data-field="message">Wishing you continued success and happiness ahead.</p>
+        </div>
+        <div class="corner-ribbon" aria-hidden="true"></div>
+      </article>
+
+      <article class="poster poster--festival" data-poster="festival">
+        <div class="brand-lockup"><img src="../reference/logo/kovan_logo_square.jpg" alt=""><span>Kovan Labs</span></div>
+        <svg class="festival-arch" viewBox="0 0 540 320" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 320V160C0 74 74 0 160 0H380C466 0 540 74 540 160V320Z" fill="#39C27C"/>
+          <path d="M60 320V170C60 104 112 50 180 50H360C428 50 480 104 480 170V320Z" fill="#0076be"/>
+          <path d="M120 320V180C120 128 162 90 212 90H328C378 90 420 128 420 180V320Z" fill="#FDB917"/>
+        </svg>
+        <div class="festival-copy">
+          <span class="eyebrow" data-field="kicker">Wishing you a</span>
+          <h2 data-field="title">Happy Festival</h2>
+          <h3 data-field="name">Kovan team</h3>
+          <p data-field="message">May this celebration bring you and your family joy, health, and prosperity.</p>
+        </div>
+        <div class="festival-ribbon" aria-hidden="true"></div>
+      </article>
+
+      <article class="poster poster--company" data-poster="company">
+        <div class="brand-lockup"><img src="../reference/logo/kovan_logo_square.jpg" alt=""><span>Kovan Labs</span></div>
+        <div class="company-copy">
+          <span class="eyebrow company-eyebrow" data-field="kicker">Kovan Labs presents</span>
+          <h2 data-field="title">Company Event</h2>
+          <p data-field="name" class="company-name">Everyone is invited</p>
+          <p data-field="message">Come join us for an afternoon of connection, celebration, and fun.</p>
+        </div>
+        <div class="company-bar" aria-hidden="true"></div>
+      </article>
+    </section>
+  </main>
+  <script src="poster-templates.js"></script>
+</body>
+</html>
