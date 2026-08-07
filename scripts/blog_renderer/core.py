@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import html
+import hashlib
 import ipaddress
+import json
 import os
 import re
 import shutil
 import socket
 import subprocess
+import tempfile
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
@@ -36,6 +39,7 @@ TEMPLATE_ALIASES = {
     "technology-radar": "radar",
 }
 REMOTE_IMAGE_LIMIT = 10 * 1024 * 1024
+DEFAULT_MANIFEST = ROOT / "blog-generation-manifest.json"
 
 
 class RenderError(RuntimeError):
@@ -54,6 +58,35 @@ class Document:
     template: str
     body: str
     metadata: dict[str, Any]
+
+
+REQUIRED_FIELDS = (
+    "title",
+    "summary",
+    "author",
+    "published_iso",
+    "published_display",
+    "category",
+)
+
+
+def validate_document(document: Document) -> None:
+    """Confirm the required data-contract fields resolved before generation.
+
+    A required field is considered present only when it is non-empty and does
+    not still hold an unresolved ``{{PLACEHOLDER}}`` value. Missing values are
+    reported together so a contributor can fix every gap in one pass instead of
+    discovering them one generated file at a time.
+    """
+    missing = []
+    for field in REQUIRED_FIELDS:
+        value = str(getattr(document, field, "") or "").strip()
+        if not value or "{{" in value:
+            missing.append(field)
+    if missing:
+        raise RenderError(
+            "Missing required fields before generation: " + ", ".join(missing)
+        )
 
 
 def slugify(value: str) -> str:
@@ -158,8 +191,6 @@ def load_document(source: Path, forced_template: str | None = None) -> Document:
         "",
     )
     summary = str(metadata.get("summary") or metadata.get("description") or _plain_text(first_paragraph)).strip()
-    if not summary:
-        summary = f"A Kovan Labs article about {title}."
     if len(summary) > 180:
         summary = summary[:177].rsplit(" ", 1)[0] + "…"
 
@@ -245,13 +276,20 @@ def _download_image(url: str, destination_dir: Path, index: int) -> Path:
     return destination
 
 
-def _copy_local_image(source_value: str, document: Document, destination_dir: Path) -> Path:
+def _copy_local_image(
+    source_value: str,
+    document: Document,
+    destination_dir: Path,
+    repo_root: Path,
+) -> Path:
     parsed_path = urllib.parse.unquote(urllib.parse.urlparse(source_value).path)
     candidate = (document.source.parent / parsed_path).resolve()
     try:
-        candidate.relative_to(ROOT.resolve())
+        candidate.relative_to(repo_root.resolve())
     except ValueError as error:
-        raise RenderError(f"Image path escapes the repository: {source_value}") from error
+        raise RenderError(
+            f"Image path escapes the repository content directory: {source_value}"
+        ) from error
     if not candidate.is_file():
         raise RenderError(f"Referenced image does not exist: {source_value}")
     destination = _unique_destination(destination_dir, _safe_image_name(source_value, "image"))
@@ -263,6 +301,7 @@ def _process_article(
     document: Document,
     output_path: Path,
     download_remote_images: bool,
+    repo_root: Path,
 ) -> str:
     rendered = markdown.markdown(
         document.body,
@@ -299,7 +338,7 @@ def _process_article(
             raise RenderError(f"Unsupported image source: {source_value}")
         else:
             asset_dir.mkdir(parents=True, exist_ok=True)
-            copied = _copy_local_image(source_value, document, asset_dir)
+            copied = _copy_local_image(source_value, document, asset_dir, repo_root)
             image["src"] = copied.relative_to(output_path.parent).as_posix()
 
         image["loading"] = "lazy"
@@ -322,7 +361,53 @@ def _process_article(
         for header in table.find_all("th"):
             header["scope"] = "col"
 
+    _convert_faq_section(soup)
     return str(soup)
+
+
+def _convert_faq_section(soup: BeautifulSoup) -> None:
+    """Turn an FAQ H2 followed by H3 questions into native disclosures."""
+
+    accepted_titles = {"frequently asked questions", "faq", "faqs"}
+    for heading in soup.find_all("h2"):
+        title = re.sub(r"\s+", " ", heading.get_text(" ", strip=True)).casefold()
+        if title not in accepted_titles:
+            continue
+
+        siblings = []
+        node = heading.next_sibling
+        while node is not None:
+            next_node = node.next_sibling
+            if getattr(node, "name", None) == "h2":
+                break
+            siblings.append(node)
+            node = next_node
+
+        if not any(getattr(item, "name", None) == "h3" for item in siblings):
+            continue
+
+        section = soup.new_tag("section", attrs={"class": "faq"})
+        heading_id = str(heading.get("id") or "faq-title")
+        heading["id"] = heading_id
+        section["aria-labelledby"] = heading_id
+        heading.insert_before(section)
+        heading.extract()
+        section.append(heading)
+
+        current_details = None
+        for item in siblings:
+            item.extract()
+            if getattr(item, "name", None) == "h3":
+                current_details = soup.new_tag("details")
+                summary = soup.new_tag("summary")
+                summary.string = item.get_text(" ", strip=True)
+                current_details.append(summary)
+                section.append(current_details)
+            elif current_details is not None:
+                current_details.append(item)
+            else:
+                section.append(item)
+        break
 
 
 ARTICLE_CSS = """
@@ -338,6 +423,9 @@ ARTICLE_CSS = """
     .rendered-article table{width:100%;min-width:560px;border-collapse:collapse}.rendered-article th,.rendered-article td{padding:16px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
     .rendered-article th{color:var(--paper);background:var(--ink);font-weight:600}.rendered-article tbody tr:nth-child(even){background:var(--mist)}.rendered-article tr:last-child td{border-bottom:0}
     .rendered-article hr{margin:48px 0;border:0;border-top:1px solid var(--line)}
+    .rendered-article .faq{margin-top:48px;padding:0;background:transparent}.rendered-article .faq details{margin:12px 0;padding:16px 20px;background:var(--mist);border:1px solid transparent;border-radius:8px}
+    .rendered-article .faq details[open]{background:var(--paper);border-color:var(--line);box-shadow:0 2px 8px rgba(9,12,8,.08)}.rendered-article .faq summary{cursor:pointer;color:var(--ink);font-family:var(--font-display,var(--display));font-weight:600}
+    .rendered-article .faq details p:last-child{margin-bottom:0}
     @media(max-width:520px){.rendered-article{width:min(calc(100% - 32px),760px);padding-top:24px}.rendered-article th,.rendered-article td{padding:12px}}
   </style>
 """
@@ -404,6 +492,92 @@ def _metadata_replacements(document: Document) -> dict[str, str]:
     }
 
 
+def _git(args: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", *args],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=check,
+    )
+
+
+def _git_sha(ref: str) -> str:
+    result = _git(["rev-parse", "--verify", "--quiet", ref], check=False)
+    if result.returncode == 0:
+        return result.stdout.strip()
+    return ""
+
+
+def _branch_exists_remote(branch: str) -> bool:
+    result = _git(["ls-remote", "--heads", "origin", branch], check=False)
+    return bool(result.stdout.strip())
+
+
+def _branch_commit_sha(branch: str) -> str:
+    """Return the head commit SHA for a branch, validating it exists."""
+    sha = _git_sha(branch)
+    if sha:
+        return sha
+    origin_sha = _git_sha(f"origin/{branch}")
+    if origin_sha:
+        return origin_sha
+    if _branch_exists_remote(branch):
+        raise RenderError(
+            f"Source branch '{branch}' exists on 'origin' but is not fetched locally. "
+            f"Run 'git fetch origin {branch}' first."
+        )
+    raise RenderError(
+        f"Source branch '{branch}' does not exist locally or on 'origin'."
+    )
+
+
+def _materialise_branch_content(branch: str) -> Path:
+    """Extract the committed content/ tree of a branch into a temp directory.
+
+    Returns the temp directory whose layout mirrors ROOT (so the Markdown
+    source path stays relative to the repository root).
+    """
+    ref = branch if _git_sha(branch) else f"origin/{branch}"
+    proc = subprocess.run(
+        ["git", "archive", "--format=tar", ref, "content/"],
+        cwd=ROOT,
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise RenderError(
+            f"Could not read content/ from branch '{branch}': "
+            f"{proc.stderr.decode(errors='replace').strip()}"
+        )
+    temp_dir = Path(tempfile.mkdtemp(prefix="kovan-blog-branch-"))
+    archive = temp_dir / "content.tar"
+    archive.write_bytes(proc.stdout)
+    extract = subprocess.run(
+        ["tar", "-xf", str(archive), "-C", str(temp_dir)],
+        capture_output=True,
+        text=True,
+    )
+    if extract.returncode != 0:
+        raise RenderError(f"Could not extract content/ from branch '{branch}'.")
+    return temp_dir
+
+
+def _embed_provenance(template: str, provenance: dict[str, Any]) -> str:
+    metas = "".join(
+        f'<meta name="{key}" content="{html.escape(str(value), quote=True)}">'
+        for key, value in provenance.items()
+    )
+    comment = (
+        "<!-- kovan-blog-provenance: "
+        + json.dumps(provenance, sort_keys=True)
+        + " -->"
+    )
+    head = re.search(r"<head[^>]*>", template)
+    if head:
+        return template[: head.end()] + metas + comment + template[head.end() :]
+    return template + comment
+
+
 def render_file(
     source: Path,
     output_dir: Path,
@@ -411,20 +585,50 @@ def render_file(
     forced_template: str | None = None,
     download_remote_images: bool = False,
     overwrite: bool = False,
+    output_path: Path | None = None,
+    source_branch: str | None = None,
 ) -> Path:
+    source = source.resolve()
+    try:
+        source_rel = source.relative_to(ROOT)
+    except ValueError:
+        raise RenderError(
+            f"Source must be inside the repository content directory: {source}"
+        )
+
+    repo_root = ROOT
+    provenance: dict[str, Any] | None = None
+    if source_branch:
+        commit_sha = _branch_commit_sha(source_branch)
+        branch_root = _materialise_branch_content(source_branch)
+        branch_source = (branch_root / source_rel).resolve()
+        if not branch_source.is_file():
+            raise RenderError(
+                f"Markdown source '{source_rel.as_posix()}' does not exist on "
+                f"branch '{source_branch}'."
+            )
+        source = branch_source
+        repo_root = branch_root
+        provenance = {
+            "source_branch": source_branch,
+            "source_file": source_rel.as_posix(),
+            "source_commit": commit_sha,
+        }
+
     document = load_document(source, forced_template)
     output_dir = output_dir.resolve()
     if document.template == "volume" and output_dir.name != "volume":
         output_dir = output_dir / "volume"
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / f"{slugify(document.title)}.html"
+    output_path = output_path.resolve() if output_path else output_dir / f"{slugify(document.title)}.html"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     if output_path.exists() and not overwrite:
         raise RenderError(f"Output already exists: {output_path}. Use --overwrite to replace it.")
 
     for required in TEMPLATES.values():
         if not required.is_file():
             raise RenderError(f"Required template is missing: {required}")
-    article_html = _process_article(document, output_path, download_remote_images)
+    article_html = _process_article(document, output_path, download_remote_images, repo_root)
     template = TEMPLATES[document.template].read_text(encoding="utf-8")
     template = _replace_main(template, article_html, document)
     template = re.sub(
@@ -435,9 +639,13 @@ def render_file(
         flags=re.DOTALL,
     )
     template = _replace_brand_assets(template, output_path, document)
+    validate_document(document)
     for key, value in _metadata_replacements(document).items():
         template = template.replace(f"{{{{{key}}}}}", html.escape(value, quote=True))
     template = template.replace("</head>", f"{ARTICLE_CSS}</head>", 1)
+
+    if provenance is not None:
+        template = _embed_provenance(template, provenance)
 
     leftovers = sorted(set(re.findall(r"\{\{[A-Z0-9_]+\}\}", template)))
     if leftovers:
@@ -445,3 +653,79 @@ def render_file(
 
     output_path.write_text(template, encoding="utf-8")
     return output_path
+
+
+def source_hash(source: Path) -> str:
+    return hashlib.sha256(source.read_bytes()).hexdigest()
+
+
+def load_manifest(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {"version": 1, "sources": {}}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise RenderError(f"Invalid blog generation manifest: {error}") from error
+    if not isinstance(data, dict):
+        raise RenderError("Blog generation manifest must be a JSON object.")
+    sources = data.setdefault("sources", {})
+    if not isinstance(sources, dict):
+        raise RenderError("Blog generation manifest 'sources' must be a JSON object.")
+    data.setdefault("version", 1)
+    return data
+
+
+def save_manifest(path: Path, manifest: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def render_file_with_manifest(
+    source: Path,
+    output_dir: Path,
+    manifest: dict[str, Any],
+    *,
+    forced_template: str | None = None,
+    download_remote_images: bool = False,
+    source_branch: str | None = None,
+) -> tuple[Path | None, str]:
+    source = source.resolve()
+    source_key = source.relative_to(ROOT).as_posix()
+    current_hash = source_hash(source)
+    sources = manifest.setdefault("sources", {})
+    previous = sources.get(source_key)
+    if (
+        source_branch is None
+        and isinstance(previous, dict)
+        and previous.get("source_hash") == current_hash
+    ):
+        output_value = previous.get("output_file")
+        output_path = ROOT / str(output_value) if output_value else None
+        return output_path, "skipped"
+
+    document = load_document(source, forced_template)
+    stored_output = previous.get("output_file") if isinstance(previous, dict) else None
+    output_path = ROOT / str(stored_output) if stored_output else None
+    if output_path is not None:
+        output_path = output_path.resolve()
+    rendered = render_file(
+        source,
+        output_dir,
+        forced_template=forced_template,
+        download_remote_images=download_remote_images,
+        overwrite=True,
+        output_path=output_path,
+        source_branch=source_branch,
+    )
+    try:
+        output_value = rendered.relative_to(ROOT).as_posix()
+    except ValueError:
+        output_value = rendered.as_posix()
+    sources[source_key] = {
+        "source_hash": current_hash,
+        "output_file": output_value,
+        "title": document.title,
+        "template": document.template,
+        "last_generated": date.today().isoformat(),
+    }
+    return rendered, "updated" if previous else "created"

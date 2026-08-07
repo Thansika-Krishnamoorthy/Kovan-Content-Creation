@@ -10,6 +10,7 @@ on:
       - "scripts/blog_renderer/**"
       - "scripts/render_*blog.py"
       - "requirements-blog-renderer.txt"
+      - "blog-generation-manifest.json"
   pull_request:
     paths:
       - "content/**/*.md"
@@ -17,14 +18,15 @@ on:
       - "scripts/blog_renderer/**"
       - "scripts/render_*blog.py"
       - "requirements-blog-renderer.txt"
+      - "blog-generation-manifest.json"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   render:
-    name: Render added Markdown with Kovan templates
+    name: Render changed Markdown with Kovan templates
     runs-on: ubuntu-latest
 
     steps:
@@ -43,49 +45,75 @@ jobs:
       - name: Install renderer dependencies
         run: python -m pip install --requirement requirements-blog-renderer.txt
 
-      - name: Find Markdown files added in the target commit
+      - name: Find Markdown files changed in the target commit
         id: markdown
         shell: bash
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            target_sha="${{ github.event.pull_request.head.sha }}"
+            git diff --name-only --diff-filter=AM \
+              "${{ github.event.pull_request.base.sha }}" \
+              "${{ github.event.pull_request.head.sha }}" \
+              -- ':(glob)content/**/*.md' \
+              | awk 'NF && $0 != "content/README.md"' > changed-markdown.txt
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            target_sha="$(git log -1 --format=%H --diff-filter=A -- ':(glob)content/**/*.md')"
+            git diff-tree --root --no-commit-id --name-only --diff-filter=AM -r \
+              HEAD -- ':(glob)content/**/*.md' \
+              | awk 'NF && $0 != "content/README.md"' > changed-markdown.txt
           else
-            target_sha="${{ github.sha }}"
+            if [[ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]]; then
+              git diff-tree --root --no-commit-id --name-only --diff-filter=AM -r \
+                "${{ github.sha }}" -- ':(glob)content/**/*.md' \
+                | awk 'NF && $0 != "content/README.md"' > changed-markdown.txt
+            else
+              git diff --name-only --diff-filter=AM \
+                "${{ github.event.before }}" \
+                "${{ github.sha }}" \
+                -- ':(glob)content/**/*.md' \
+                | awk 'NF && $0 != "content/README.md"' > changed-markdown.txt
+            fi
           fi
 
-          if [[ -z "$target_sha" ]]; then
-            echo "found=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          git diff-tree --root --no-commit-id --name-only --diff-filter=A -r \
-            "$target_sha" -- ':(glob)content/**/*.md' \
-            | awk 'NF && $0 != "content/README.md"' > added-markdown.txt
-
-          if [[ -s added-markdown.txt ]]; then
+          if [[ -s changed-markdown.txt ]]; then
             echo "found=true" >> "$GITHUB_OUTPUT"
             echo "Markdown files to render:"
-            sed 's/^/- /' added-markdown.txt
+            sed 's/^/- /' changed-markdown.txt
           else
             echo "found=false" >> "$GITHUB_OUTPUT"
-            echo "No newly added content Markdown files were found."
+            echo "No added or modified content Markdown files were found."
           fi
 
       - name: Render HTML previews
         if: steps.markdown.outputs.found == 'true'
         shell: bash
         run: |
-          mapfile -t markdown_files < added-markdown.txt
+          mkdir -p generated-blog-previews
+          if [[ -f blog-generation-manifest.json ]]; then
+            cp blog-generation-manifest.json generated-blog-previews/blog-generation-manifest.json
+          fi
+          mapfile -t markdown_files < changed-markdown.txt
           python scripts/render_blog.py \
             --output-dir generated-blog-previews \
+            --manifest generated-blog-previews/blog-generation-manifest.json \
             --download-remote-images \
-            --overwrite \
             "${markdown_files[@]}"
+          cp generated-blog-previews/blog-generation-manifest.json blog-generation-manifest.json
 
       - name: Validate renderer
         run: python -m unittest discover -s tests -p "test_blog_renderer.py"
+
+      - name: Commit manifest updates
+        if: steps.markdown.outputs.found == 'true' && github.event_name == 'push'
+        shell: bash
+        run: |
+          if git diff --quiet -- blog-generation-manifest.json; then
+            echo "Manifest is unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add blog-generation-manifest.json
+          git commit -m "Update blog generation manifest"
+          git push
 
       - name: Upload rendered website preview
         if: steps.markdown.outputs.found == 'true'

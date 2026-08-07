@@ -23,6 +23,16 @@ Use normal Markdown for headings, paragraphs, lists, links, blockquotes, code bl
 ![Diagram explaining the workflow](images/workflow.png)
 ```
 
+To render template-style FAQ dropdowns, use an H2 FAQ section with each question as an H3:
+
+```md
+## Frequently asked questions
+
+### What does this workflow generate?
+
+It generates a separate Kovan HTML preview.
+```
+
 Local image paths are resolved relative to the Markdown file and copied beside the generated preview. The GitHub Actions preview also downloads valid public images referenced with `http` or `https`.
 
 ## Render locally
