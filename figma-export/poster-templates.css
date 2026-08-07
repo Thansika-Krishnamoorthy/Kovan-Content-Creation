@@ -1,0 +1,54 @@
+:root { --red:#ef3829; --green:#00a95c; --yellow:#fdb917; --blue:#0076be; --ink:#171717; --muted:#666; }
+* { box-sizing:border-box; }
+body { margin:0; color:var(--ink); background:#eef1f5; font-family:Inter,Arial,sans-serif; }
+.toolbar { position:sticky; z-index:10; top:0; display:flex; align-items:center; gap:24px; padding:14px 24px; background:#fff; border-bottom:1px solid #dfe3e8; box-shadow:0 2px 10px #18212b12; }
+.toolbar div { margin-right:auto; display:grid; gap:3px; }.toolbar span,.editor p,.file-field small { color:#68717d; font-size:12px; }
+.toolbar label { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; }
+select,button,input { font:inherit; } select,button { min-height:38px; border:1px solid #cbd2da; border-radius:7px; background:#fff; padding:0 12px; }
+button { border-color:var(--blue); color:#fff; background:var(--blue); font-weight:700; cursor:pointer; }
+.workspace { display:grid; grid-template-columns:280px minmax(0,1fr); gap:28px; max-width:1500px; margin:auto; padding:28px; }
+.export-note { padding:10px; border-radius:7px; background:#f1f7fb; }
+.export-status { position:fixed; z-index:20; right:24px; bottom:24px; display:none; margin:0; padding:11px 14px; border-radius:8px; color:#fff; background:#202a35; box-shadow:0 5px 20px #0003; font-size:13px; }
+.export-status.is-visible { display:block; }
+.editor { position:sticky; top:94px; align-self:start; padding:22px; border-radius:12px; background:#fff; box-shadow:0 8px 28px #17212b12; }
+.editor h1 { margin:0; font:700 20px Poppins,sans-serif; }.editor p { margin:5px 0 20px; line-height:1.5; }
+#editor-fields { display:grid; gap:13px; }.editor label { display:grid; gap:6px; font-size:12px; font-weight:700; }
+.editor input,.editor textarea { width:100%; border:1px solid #ccd2d9; border-radius:7px; padding:9px 10px; color:#20252b; background:#fbfcfd; }
+.editor textarea { min-height:82px; resize:vertical; }.file-field { margin-top:16px; }.file-field.is-hidden { display:none; }
+.posters { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:center; gap:28px; }
+.poster { position:relative; overflow:hidden; width:min(100%,540px); aspect-ratio:4/5; background-color:#fff; background-image:linear-gradient(#0076be12 1px,transparent 1px),linear-gradient(90deg,#0076be12 1px,transparent 1px); background-size:36px 36px; box-shadow:0 12px 32px #15202c20; display:none; isolation:isolate; }
+.poster.is-selected { display:block; }
+.brand-lockup { position:absolute; z-index:5; top:55px; left:50%; display:flex; align-items:center; gap:7px; transform:translateX(-50%); color:#111; font:500 14px/1 Inter,Arial,sans-serif; white-space:nowrap; }
+.brand-lockup img { width:25px; height:25px; object-fit:contain; }
+.brand-lockup--left { left:40px; transform:none; }
+.eyebrow { display:block; color:#404852; font:600 20px Poppins,sans-serif; letter-spacing:.2em; text-transform:uppercase; }
+.birthday-copy { position:relative; z-index:3; margin:143px auto 0; width:82%; text-align:center; }.birthday-copy h2 { margin:1px 0 -1px; color:#4e4e4e; font:400 64px/1 "Great Vibes",Georgia,serif; }.birthday-copy h3 { margin:5px 0 13px; color:#f04b13; font:800 48px/1.12 Poppins,sans-serif; }.birthday-copy p { max-width:350px; margin:auto; color:#555; font-size:14px; line-height:1.55; }
+.confetti { position:absolute; z-index:2; top:0; width:45%; height:155px; object-fit:cover; object-position:top; }.confetti--left { left:0; }.confetti--right { right:0; transform:scaleX(-1); }
+.birthday-footer { position:absolute; z-index:1; left:0; bottom:0; width:100%; height:285px; overflow:hidden; }.birthday-pattern { overflow:hidden; opacity:.62; }
+.hiring-copy { position:absolute; left:40px; top:140px; z-index:3; }.hiring-copy h2 { margin:0; color:#f00016; font:800 84px/.88 Poppins,sans-serif; letter-spacing:-.04em; }.hiring-copy h3 { display:inline-block; margin:25px 0 8px; padding:2px 8px; background:var(--yellow); font:700 58px/1.12 Poppins,sans-serif; }.job-meta { display:flex; gap:28px; padding-left:36px; font-size:15px; font-weight:600; }.briefcase { position:absolute; z-index:2; right:-3px; top:407px; width:183px; transform:rotate(2deg); }.hiring-cta { position:absolute; left:40px; bottom:34px; }.hiring-cta i { display:block; width:0; height:0; margin-bottom:13px; border-left:8px solid transparent; border-right:8px solid transparent; border-top:13px solid var(--yellow); }.hiring-cta p { margin:0; color:#333; font-size:13px; line-height:1.55; }
+.anniversary-copy { position:absolute; z-index:4; top:110px; width:100%; text-align:center; }.anniversary-copy h2 { margin:4px 0 0; color:var(--blue); font:400 43px/1 "Great Vibes",Georgia,serif; }.photo-stack { position:absolute; z-index:3; top:200px; left:50%; width:235px; height:274px; transform:translateX(-50%); }.photo-stack .blue-card { position:absolute; inset:10px 25px 9px -18px; background:var(--blue); transform:rotate(-7deg); }.photo-stack figure { position:absolute; inset:0; margin:0; padding:11px; background:#fff; border:2px solid #e6e6e6; box-shadow:0 5px 13px #1b27352b; }.photo-stack img { width:100%; height:100%; object-fit:cover; }.triangle { position:absolute; width:0; height:0; border-top:14px solid transparent; border-bottom:14px solid transparent; border-left:22px solid var(--blue); }.triangle--left { left:-7px; bottom:-7px; transform:rotate(45deg); }.triangle--right { right:-38px; top:107px; }
+.anniversary-message { position:absolute; z-index:3; top:505px; width:100%; padding:0 90px; text-align:center; }.anniversary-message h3 { margin:0 0 7px; color:var(--blue); font:700 19px Poppins,sans-serif; }.anniversary-message strong { font-size:13px; }.anniversary-message p { margin:5px auto; max-width:330px; color:#555; font-size:12px; line-height:1.5; }.corner-ribbon { position:absolute; right:-20px; top:-12px; width:80px; height:40px; border:10px solid var(--blue); transform:rotate(35deg); }
+/* Festival / greeting poster — logo + copy on light bg, colourful arch at bottom */
+.festival-arch { position:absolute; z-index:1; left:0; top:auto; bottom:0; width:100%; height:300px; }
+.festival-copy { position:relative; z-index:3; margin:150px auto 0; width:82%; text-align:center; }
+.festival-copy h2 { margin:2px 0 -1px; color:#0d5a3c; font:400 62px/1 "Great Vibes",Georgia,serif; }
+.festival-copy h3 { margin:6px 0 12px; color:var(--red); font:800 40px/1.12 Poppins,sans-serif; }
+.festival-copy p { max-width:360px; margin:auto; color:#444; font-size:14px; line-height:1.55; }
+.festival-ribbon { position:absolute; z-index:4; left:0; bottom:0; width:100%; height:18px; background:repeating-linear-gradient(90deg,var(--red) 0 40px,var(--yellow) 40px 80px,var(--green) 80px 120px,var(--blue) 120px 160px); }
+/* Company event poster */
+.company-copy { position:relative; z-index:3; margin:150px auto 0; width:80%; text-align:center; }
+.company-eyebrow { font-size:14px; }
+.company-copy h2 { margin:4px 0 12px; color:var(--blue); font:800 52px/1.08 Poppins,sans-serif; }
+.company-copy .company-name { margin:0 0 14px; color:var(--red); font:700 22px/1.2 Poppins,sans-serif; }
+.company-copy p { max-width:380px; margin:auto; color:#444; font-size:15px; line-height:1.6; }
+.company-bar { position:absolute; z-index:2; left:0; bottom:0; width:100%; height:8px; background:var(--ink); }
+@media (max-width:900px) { .toolbar { flex-wrap:wrap; gap:10px; }.toolbar div { width:100%; }.workspace { grid-template-columns:1fr; padding:16px; }.editor { position:static; }.poster { font-size:80%; } }
+@media print { @page { size:8in 10in; margin:0; } body { background:#fff; }.toolbar,.editor { display:none!important; }.workspace,.posters { display:block; padding:0; margin:0; }.poster { display:none; width:8in; height:10in; box-shadow:none; print-color-adjust:exact; -webkit-print-color-adjust:exact; }.poster.is-selected { display:block; } }
+
+/* Headless export captures the actual 540×675 template without re-layout. */
+.export-mode { width:var(--export-width); height:var(--export-height); overflow:hidden; background:#fff; }
+.export-mode .toolbar,.export-mode .editor,.export-mode .export-status { display:none!important; }
+.export-mode .workspace { display:grid; place-items:center; width:100%; height:100%; max-width:none; margin:0; padding:0; }
+.export-mode .posters { display:block; width:540px; height:675px; }
+.export-mode .poster { display:none; width:540px; height:675px; max-width:none; transform:none; box-shadow:none; }
+.export-mode .poster.is-selected { display:block; }

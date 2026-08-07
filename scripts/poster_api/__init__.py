@@ -1,0 +1,1 @@
+"""Daily event-poster API."""
