@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "last_updated": "2026-08-07",
+  "description": "Maps every Kovan poster event key to its approved Figma template(s). Frame IDs are placeholders to be filled with real Figma node IDs once the reusable templates are created in Figma (see docs/TEMPLATE_MAPPING.md).",
+  "figma_project": {
+    "file_id": "FIGMA_FILE_ID_PLACEHOLDER",
+    "file_name": "Kovan Poster Templates",
+    "page_id": "FIGMA_PAGE_ID_PLACEHOLDER",
+    "page_name": "Posters"
+  },
+  "events": {
+    "birthday": {
+      "template_name": "KOVAN_TEMPLATE_BIRTHDAY",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_BIRTHDAY_01", "frame_id": "FIGMA_FRAME_BIRTHDAY_01" },
+        { "name": "KOVAN_TEMPLATE_BIRTHDAY_02", "frame_id": "FIGMA_FRAME_BIRTHDAY_02" }
+      ],
+      "current_index": 0,
+      "total_templates": 2,
+      "next_index": 1
+    },
+    "work_anniversary": {
+      "template_name": "KOVAN_TEMPLATE_WORK_ANNIVERSARY",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_WORK_ANNIVERSARY_01", "frame_id": "FIGMA_FRAME_WORK_ANNIVERSARY_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "new_joiner": {
+      "template_name": "KOVAN_TEMPLATE_NEW_JOINER",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_NEW_JOINER_01", "frame_id": "FIGMA_FRAME_NEW_JOINER_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "farewell": {
+      "template_name": "KOVAN_TEMPLATE_FAREWELL",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_FAREWELL_01", "frame_id": "FIGMA_FRAME_FAREWELL_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "promotion": {
+      "template_name": "KOVAN_TEMPLATE_PROMOTION",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_PROMOTION_01", "frame_id": "FIGMA_FRAME_PROMOTION_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "achievement": {
+      "template_name": "KOVAN_TEMPLATE_ACHIEVEMENT",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_ACHIEVEMENT_01", "frame_id": "FIGMA_FRAME_ACHIEVEMENT_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "pongal": {
+      "template_name": "KOVAN_TEMPLATE_PONGAL",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_PONGAL_01", "frame_id": "FIGMA_FRAME_PONGAL_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "diwali": {
+      "template_name": "KOVAN_TEMPLATE_DIWALI",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_DIWALI_01", "frame_id": "FIGMA_FRAME_DIWALI_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "eid_mubarak": {
+      "template_name": "KOVAN_TEMPLATE_EID_MUBARAK",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_EID_MUBARAK_01", "frame_id": "FIGMA_FRAME_EID_MUBARAK_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "christmas": {
+      "template_name": "KOVAN_TEMPLATE_CHRISTMAS",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_CHRISTMAS_01", "frame_id": "FIGMA_FRAME_CHRISTMAS_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "new_year": {
+      "template_name": "KOVAN_TEMPLATE_NEW_YEAR",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_NEW_YEAR_01", "frame_id": "FIGMA_FRAME_NEW_YEAR_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "independence_day": {
+      "template_name": "KOVAN_TEMPLATE_INDEPENDENCE_DAY",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_INDEPENDENCE_DAY_01", "frame_id": "FIGMA_FRAME_INDEPENDENCE_DAY_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "republic_day": {
+      "template_name": "KOVAN_TEMPLATE_REPUBLIC_DAY",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_REPUBLIC_DAY_01", "frame_id": "FIGMA_FRAME_REPUBLIC_DAY_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "womens_day": {
+      "template_name": "KOVAN_TEMPLATE_WOMENS_DAY",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_WOMENS_DAY_01", "frame_id": "FIGMA_FRAME_WOMENS_DAY_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "company_event": {
+      "template_name": "KOVAN_TEMPLATE_COMPANY_EVENT",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_COMPANY_EVENT_01", "frame_id": "FIGMA_FRAME_COMPANY_EVENT_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "job_opening": {
+      "template_name": "KOVAN_TEMPLATE_JOB_OPENING",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_JOB_OPENING_01", "frame_id": "FIGMA_FRAME_JOB_OPENING_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    },
+    "general_event": {
+      "template_name": "KOVAN_TEMPLATE_GENERAL_EVENT",
+      "frames": [
+        { "name": "KOVAN_TEMPLATE_GENERAL_EVENT_01", "frame_id": "FIGMA_FRAME_GENERAL_EVENT_01" }
+      ],
+      "current_index": 0,
+      "total_templates": 1,
+      "next_index": 0
+    }
+  }
+}
