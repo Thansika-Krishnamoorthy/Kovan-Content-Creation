@@ -1,0 +1,8 @@
+interface:
+  display_name: "Generate Blog From Markdown"
+  short_description: "Turn repo Markdown into a Kovan blog"
+  default_prompt: "Use $generate-blog-from-markdown to create a Kovan blog from a Markdown file in this repo."
+
+policy:
+  allow_implicit_invocation: true
+

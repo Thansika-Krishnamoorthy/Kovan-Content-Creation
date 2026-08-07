@@ -1,14 +1,3 @@
-.env
-.env.*
-*.key
-*.token
-credentials.json
-token.json
-node_modules/
+generated-blog-previews/
 __pycache__/
 *.pyc
-output/
-exports/
-.DS_Store
-
-
