@@ -17,6 +17,7 @@ from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).resolve().parent
 HTML_FILE = ROOT / "Kovan_PromptGen.html"
+BRAND_ASSETS_DIR = ROOT / " Brand Assets"
 load_dotenv(ROOT / ".env")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/images"
 MODEL = "bytedance-seed/seedream-4.5"
@@ -34,7 +35,7 @@ IMAGE_SIGNATURES = {
 app = FastAPI(title="Kovan Labs Seedream Poster API", version="1.0.0")
 app.mount("/brand-kit", StaticFiles(directory=ROOT / "brand-kit"), name="brand-kit")
 # The repository keeps this legacy directory with a leading space in its name.
-app.mount("/brand-assets", StaticFiles(directory=ROOT / " Brand Assets"), name="brand-assets")
+app.mount("/brand-assets", StaticFiles(directory=BRAND_ASSETS_DIR), name="brand-assets")
 
 
 @app.get("/", include_in_schema=False)
@@ -101,7 +102,8 @@ async def generate_poster(
         "prompt": (
             f"{prompt}\n\nPlace the exact attached logo in the top-left safe zone. Do not recreate or modify it. "
             "The final poster must include the logo; do not leave a placeholder. "
-            "Reserve a clean, empty top-left logo exclusion zone approximately 38% of the canvas wide and 15% high. "
+            "Reserve a clean, empty top-left logo exclusion zone approximately 28% of the canvas wide and 18% high. "
+            "Keep the final composited logo compact: no more than 22% of the canvas width or 11% of its height. "
             "Nothing may appear behind, under, beside, or overlap this zone: no text, pills, borders, shapes, motifs, illustrations, logos, or wordmarks. "
             "Do not draw, spell, approximate, recolor, crop, replace, or duplicate any logo anywhere in the poster."
         ),

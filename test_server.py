@@ -1,6 +1,7 @@
 import base64
 import os
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from fastapi import HTTPException
@@ -45,6 +46,21 @@ class FakeUpload:
 
 
 class PosterApiTests(unittest.TestCase):
+    def test_all_approved_logos_are_available_to_the_picker(self):
+        approved_logos = {
+            "logo_horizontal.png",
+            "logo_horizontal_tagline.png",
+            "logo_vertical.png",
+            "logo_vertical_tagline.png",
+            "logo_mono_ink.png",
+            "logo_mono_white.png",
+            "mark.png",
+        }
+        html = Path("Kovan_PromptGen.html").read_text(encoding="utf-8")
+        for filename in approved_logos:
+            self.assertTrue((server.BRAND_ASSETS_DIR / filename).is_file())
+            self.assertIn(f'/brand-assets/{filename}', html)
+
     def test_health_endpoint_is_public(self):
         self.assertEqual(self.run_async(server.health()), {"status": "ok"})
 

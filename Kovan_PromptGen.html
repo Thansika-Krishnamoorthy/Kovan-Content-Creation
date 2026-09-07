@@ -165,6 +165,25 @@
     }
     .recommended-logo-preview.dark { background: var(--ink); }
     .recommended-logo-preview img { display: block; max-width: 100%; max-height: 68px; object-fit: contain; }
+    .logo-gallery {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px; margin-top: 12px;
+    }
+    .logo-card {
+      min-width: 0; min-height: 104px; display: grid; grid-template-rows: 66px auto;
+      gap: 7px; align-items: center; padding: 8px; border: 1px solid var(--line);
+      border-radius: var(--radius-md); background: var(--paper); color: var(--ink);
+      font: 600 10px/1.25 var(--font-body); text-align: left; cursor: pointer;
+    }
+    .logo-card:hover { border-color: var(--grey); }
+    .logo-card.active { border: 2px solid var(--spark); padding: 7px; box-shadow: 0 0 0 2px rgba(241,73,36,.12); }
+    .logo-card-visual {
+      width: 100%; height: 66px; display: grid; place-items: center;
+      padding: 7px; border-radius: var(--radius-sm); background: var(--paper); overflow: hidden;
+    }
+    .logo-card.dark .logo-card-visual { background: var(--ink); }
+    .logo-card img { display: block; max-width: 100%; max-height: 52px; object-fit: contain; }
+    .logo-card span { overflow-wrap: anywhere; }
     .recommended-logo-copy { display: grid; gap: 4px; }
     .recommended-logo-copy strong { color: var(--ink); font-size: 13px; }
     .recommended-logo-copy small { color: var(--grey); font-size: 11px; line-height: 1.35; }
@@ -321,10 +340,15 @@
               <label for="logoChoice">Logo</label>
               <select class="logo-select" id="logoChoice" name="logoChoice">
                 <option value="auto">Auto recommendation</option>
-                <option value="square-light">Vertical lockup — light background</option>
-                <option value="horizontal-white">Horizontal lockup — light background</option>
-                <option value="vertical-white">Vertical lockup — light background</option>
+                <option value="horizontal">Horizontal — full colour</option>
+                <option value="horizontal-tagline">Horizontal with tagline — full colour</option>
+                <option value="vertical">Vertical — full colour</option>
+                <option value="vertical-tagline">Vertical with tagline — full colour</option>
+                <option value="mono-ink">Horizontal — mono Ink</option>
+                <option value="mono-white">Horizontal — mono white</option>
+                <option value="mark">K mark only — full colour</option>
               </select>
+              <div class="logo-gallery" id="logoGallery" aria-label="Approved Kovan Labs logos"></div>
               <div class="recommended-logo">
                 <div class="recommended-logo-preview" id="recommendedLogoPreview">
                   <img id="recommendedLogoImage" alt="Recommended Kovan Labs logo" />
@@ -525,32 +549,61 @@
     });
 
     const logoInventory = {
-      "square-light": {
-        file: "logo_vertical.png",
-        name: "Vertical logo",
-        reason: "Best contrast on the light Kovan-first logo zone.",
-        use: "a clean Paper #FFFFFF zone",
-        dark: false,
-        sourceUrl: "/brand-assets/logo_vertical.png",
-        dataUri: embeddedLogos["square-light"]
-      },
-      "horizontal-white": {
+      "horizontal": {
         file: "logo_horizontal.png",
-        name: "Horizontal logo",
-        reason: "Approved horizontal lockup for light poster backgrounds.",
+        name: "Horizontal — full colour",
+        reason: "Default approved lockup for light backgrounds.",
         use: "a clean Paper #FFFFFF zone",
         dark: false,
-        sourceUrl: "/brand-assets/logo_horizontal.png",
-        dataUri: embeddedLogos["horizontal-white"]
+        sourceUrl: "/brand-assets/logo_horizontal.png"
       },
-      "vertical-white": {
-        file: "logo_vertical.png",
-        name: "Vertical logo",
-        reason: "Approved vertical lockup for square and centered contexts.",
+      "horizontal-tagline": {
+        file: "logo_horizontal_tagline.png",
+        name: "Horizontal with tagline",
+        reason: "Approved lockup for covers, footers, and formal uses.",
         use: "a clean Paper #FFFFFF zone",
         dark: false,
-        sourceUrl: "/brand-assets/logo_vertical.png",
-        dataUri: embeddedLogos["vertical-white"]
+        sourceUrl: "/brand-assets/logo_horizontal_tagline.png"
+      },
+      "vertical": {
+        file: "logo_vertical.png",
+        name: "Vertical — full colour",
+        reason: "Approved lockup for square and centred contexts.",
+        use: "a clean Paper #FFFFFF zone",
+        dark: false,
+        sourceUrl: "/brand-assets/logo_vertical.png"
+      },
+      "vertical-tagline": {
+        file: "logo_vertical_tagline.png",
+        name: "Vertical with tagline",
+        reason: "Approved vertical lockup with the brand tagline.",
+        use: "a clean Paper #FFFFFF zone",
+        dark: false,
+        sourceUrl: "/brand-assets/logo_vertical_tagline.png"
+      },
+      "mono-ink": {
+        file: "logo_mono_ink.png",
+        name: "Horizontal — mono Ink",
+        reason: "Approved single-colour lockup when full colour cannot be used.",
+        use: "a clean Paper #FFFFFF zone",
+        dark: false,
+        sourceUrl: "/brand-assets/logo_mono_ink.png"
+      },
+      "mono-white": {
+        file: "logo_mono_white.png",
+        name: "Horizontal — mono white",
+        reason: "Approved white lockup for Ink or dark backgrounds.",
+        use: "a clean Ink #090C08 zone",
+        dark: true,
+        sourceUrl: "/brand-assets/logo_mono_white.png"
+      },
+      "mark": {
+        file: "mark.png",
+        name: "K mark only — full colour",
+        reason: "Approved mark for compact spaces.",
+        use: "a clean Paper #FFFFFF zone",
+        dark: false,
+        sourceUrl: "/brand-assets/mark.png"
       }
     };
 
@@ -702,6 +755,7 @@
 
     const speakerInput = document.getElementById("speakerPhoto");
     const logoChoiceSelect = document.getElementById("logoChoice");
+    const logoGallery = document.getElementById("logoGallery");
     const logoSelectionBadge = document.getElementById("logoSelectionBadge");
     const speakerPreview = document.getElementById("speakerPreview");
     const clearSpeakerBtn = document.getElementById("clearSpeakerBtn");
@@ -734,7 +788,7 @@
     }
 
     function autoRecommendedLogoKey() {
-      return visualMode === "energy" ? "horizontal-white" : "square-light";
+      return visualMode === "energy" ? "horizontal-tagline" : "horizontal";
     }
 
     function activeLogo() {
@@ -754,12 +808,42 @@
       logoSelectionBadge.textContent = logoChoice === "auto" ? "Recommended" : "Manual choice";
       recommendedLogoName.textContent = logo.name;
       recommendedLogoReason.textContent = logoChoice === "auto"
-        ? `${logo.reason} Embedded Base64 preview.`
-        : `Selected manually. Auto recommendation: ${recommended.name}. Embedded Base64 preview.`;
+        ? logo.reason
+        : `Selected manually. Auto recommendation: ${recommended.name}.`;
       promptLogoName.textContent = logo.file;
       [recommendedLogoDownload, promptLogoDownload].forEach(link => {
         link.href = logo.sourceUrl || logo.dataUri;
         link.download = logo.file;
+      });
+      renderLogoGallery();
+    }
+
+    function renderLogoGallery() {
+      const selectedKey = logoChoice === "auto" ? autoRecommendedLogoKey() : logoChoice;
+      logoGallery.innerHTML = "";
+      Object.entries(logoInventory).forEach(([key, logo]) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = `logo-card${logo.dark ? " dark" : ""}${key === selectedKey ? " active" : ""}`;
+        card.setAttribute("aria-pressed", key === selectedKey ? "true" : "false");
+        card.title = `Select ${logo.file}`;
+
+        const visual = document.createElement("span");
+        visual.className = "logo-card-visual";
+        const image = document.createElement("img");
+        image.src = logo.sourceUrl;
+        image.alt = logo.name;
+        visual.appendChild(image);
+
+        const label = document.createElement("span");
+        label.textContent = logo.file;
+        card.append(visual, label);
+        card.addEventListener("click", () => {
+          logoChoice = key;
+          logoChoiceSelect.value = key;
+          render();
+        });
+        logoGallery.appendChild(card);
       });
     }
 
@@ -891,7 +975,7 @@ ${exactText.concat(details).join("\n")}`;
         : "- No speaker photo is supplied. Do not reserve a portrait frame, silhouette or empty photo area.";
       return `ASSETS & LAYOUT
 - Place the exact attached logo in the top-left safe zone. Do not recreate or modify it. The final poster must include the logo; do not leave a placeholder.
-- Reserve a clean, empty top-left exclusion zone approximately 38% of the canvas wide and 15% high, with at least one mark-tile of clear space around it. Nothing may sit behind, under, beside, or overlap this zone—not text, pills, borders, shapes, motifs, or illustrations. Do not draw, spell, approximate, recolor, crop, replace or duplicate any logo or wordmark there or elsewhere.
+- Reserve a clean, empty top-left exclusion zone approximately 28% of the canvas wide and 18% high, with at least one mark-tile of clear space around it. The final composited logo must remain compact: no more than 22% of the canvas width or 11% of its height. Nothing may sit behind, under, beside, or overlap this zone—not text, pills, borders, shapes, motifs, or illustrations. Do not draw, spell, approximate, recolor, crop, replace or duplicate any logo or wordmark there or elsewhere.
 ${speakerRule}
 - Keep the headline left/center and footer/CTA at the bottom within safe margins. Return the finished poster artwork with the speaker placed when supplied; the official logo is composited afterward.`;
     }
@@ -1043,17 +1127,29 @@ Motif: ${state.motif}. ${people}${direction}`;
       const context = canvas.getContext("2d");
       context.drawImage(poster, 0, 0);
 
-      const margin = Math.max(24, Math.round(canvas.width * 0.025));
-      const safeWidth = Math.round(canvas.width * 0.38);
-      const safeHeight = Math.round(canvas.height * 0.15);
-      context.fillStyle = logo.dark ? "#090C08" : "#FFFFFF";
-      context.fillRect(0, 0, safeWidth + margin * 2, safeHeight + margin * 2);
-      const scale = Math.min(safeWidth / logoImage.naturalWidth, safeHeight / logoImage.naturalHeight);
+      const margin = Math.max(24, Math.round(canvas.width * 0.035));
+      const maxLogoWidth = Math.round(canvas.width * 0.22);
+      const maxLogoHeight = Math.round(canvas.height * 0.11);
+      const scale = Math.min(
+        1,
+        maxLogoWidth / logoImage.naturalWidth,
+        maxLogoHeight / logoImage.naturalHeight
+      );
       const drawWidth = Math.round(logoImage.naturalWidth * scale);
       const drawHeight = Math.round(logoImage.naturalHeight * scale);
+      // One logo tile is approximately one third of the lockup's shorter edge.
+      const clearSpace = Math.max(12, Math.round(Math.min(drawWidth, drawHeight) / 3));
       const drawX = margin;
-      const drawY = margin + Math.round((safeHeight - drawHeight) / 2);
+      const drawY = margin;
+      context.fillStyle = logo.dark ? "#090C08" : "#FFFFFF";
+      context.fillRect(
+        Math.max(0, drawX - clearSpace),
+        Math.max(0, drawY - clearSpace),
+        drawWidth + clearSpace * 2,
+        drawHeight + clearSpace * 2
+      );
       context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = "high";
       context.drawImage(logoImage, drawX, drawY, drawWidth, drawHeight);
       return canvas.toDataURL("image/png");
     }
