@@ -226,13 +226,13 @@
     .generate-btn { width: 100%; }
     .generate-btn:disabled { opacity: .65; cursor: wait; }
     .generate-status { margin: 8px 0 0; color: var(--grey); font-size: 12px; }
-    .generate-status.error { color: var(--spark); }
-    .generate-status.success { color: var(--jade); }
-    .generated-result { margin-top: 12px; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--paper); }
+    .generate-status.error { color: #B42318; }
+    .generate-status.success { color: var(--cobalt); }
+    .generated-result { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--paper); }
     .generated-result[hidden] { display: none; }
     .generated-result img { display: block; width: 100%; max-height: 65vh; object-fit: contain; background: var(--ink); border-radius: var(--radius-sm); }
     .generated-meta { margin-top: 8px; color: var(--grey); font-size: 11px; }
-    .generated-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .generated-actions { display: flex; gap: 8px; margin-top: 12px; }
     .generated-actions .btn { flex: 1; }
     .rules {
       display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px;
@@ -991,6 +991,11 @@ Motif: ${state.motif}. ${people}${direction}`;
     }
 
     function render() {
+      if (compositedPosterDataUrl) {
+        compositedPosterDataUrl = "";
+        generatedResult.hidden = true;
+        setGenerationStatus("Inputs changed. Generate again to refresh the poster.");
+      }
       updateRecommendedLogo();
       const prompt = buildPrompt(readPromptState());
       const words = prompt.match(/\S+/g)?.length || 0;
@@ -1092,11 +1097,13 @@ Motif: ${state.motif}. ${people}${direction}`;
 
     logoChoiceSelect.addEventListener("change", () => {
       logoChoice = logoChoiceSelect.value;
+      render();
     });
 
     speakerInput.addEventListener("change", () => {
       speakerPhoto = speakerInput.files[0] || null;
       renderSpeakerPreview();
+      render();
     });
 
     clearSpeakerBtn.addEventListener("click", () => {

@@ -16,4 +16,4 @@ export OPENROUTER_API_KEY=your_key
 .venv/bin/uvicorn server:app --reload
 ```
 
-Open <http://127.0.0.1:8000>. Image generation uses paid OpenRouter requests; do not put the API key in the HTML or commit `.env` files.
+Open <http://127.0.0.1:8000>. Image generation uses paid OpenRouter requests; do not put the API key in the HTML or commit `.env` files. “Generate again” is an explicit manual retry so accidental duplicate paid requests are avoided.

@@ -22,6 +22,12 @@ MAX_PROMPT_CHARS = 20_000
 MAX_REFERENCE_BYTES = 10 * 1024 * 1024
 ALLOWED_ASPECT_RATIOS = {"4:5", "1:1", "9:16", "3:4"}
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+IMAGE_SIGNATURES = {
+    "image/jpeg": (b"\xff\xd8\xff",),
+    "image/png": (b"\x89PNG\r\n\x1a\n",),
+    "image/gif": (b"GIF87a", b"GIF89a"),
+    "image/webp": (b"RIFF",),
+}
 
 app = FastAPI(title="Kovan Labs Seedream Poster API", version="1.0.0")
 app.mount("/brand-kit", StaticFiles(directory=ROOT / "brand-kit"), name="brand-kit")
@@ -48,6 +54,10 @@ async def reference_data_url(upload: UploadFile | None) -> str | None:
     contents = await upload.read(MAX_REFERENCE_BYTES + 1)
     if len(contents) > MAX_REFERENCE_BYTES:
         raise HTTPException(status_code=413, detail="Speaker image must be 10 MB or smaller.")
+    if not contents or not any(contents.startswith(signature) for signature in IMAGE_SIGNATURES[content_type]):
+        raise HTTPException(status_code=422, detail="Speaker image contents do not match the declared image type.")
+    if content_type == "image/webp" and contents[8:12] != b"WEBP":
+        raise HTTPException(status_code=422, detail="Speaker image contents do not match the declared image type.")
     media_type = content_type or mimetypes.guess_type(upload.filename)[0] or "image/png"
     encoded = base64.b64encode(contents).decode("ascii")
     return f"data:{media_type};base64,{encoded}"

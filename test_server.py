@@ -1,7 +1,7 @@
 import base64
 import os
 import unittest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 from fastapi import HTTPException
 
@@ -20,8 +20,14 @@ class FakeResponse:
 
 
 class FakeAsyncClient:
+    last_json = None
+
     def __init__(self, *args, **kwargs):
-        self.post = AsyncMock(return_value=FakeResponse())
+        self.post = self._post
+
+    async def _post(self, url, headers, json):
+        FakeAsyncClient.last_json = json
+        return FakeResponse()
 
     async def __aenter__(self):
         return self
@@ -35,7 +41,7 @@ class FakeUpload:
     content_type = "image/png"
 
     async def read(self, size=-1):
-        return b"fake-image"
+        return b"\x89PNG\r\n\x1a\nvalid-image"
 
 
 class PosterApiTests(unittest.TestCase):
@@ -62,6 +68,18 @@ class PosterApiTests(unittest.TestCase):
                     FakeUpload(),
                 ))
         self.assertTrue(result["image"].startswith("data:image/png;base64,"))
+        self.assertEqual(FakeAsyncClient.last_json["aspect_ratio"], "9:16")
+        self.assertEqual(len(FakeAsyncClient.last_json["input_references"]), 1)
+
+    def test_generation_rejects_invalid_image_contents(self):
+        class InvalidUpload(FakeUpload):
+            async def read(self, size=-1):
+                return b"not-an-image"
+
+        with patch.dict(os.environ, {"OPENROUTER_API_KEY": "server-secret"}, clear=True):
+            with self.assertRaises(HTTPException) as caught:
+                self.run_async(server.generate_poster("make a poster", "4:5", InvalidUpload()))
+        self.assertEqual(caught.exception.status_code, 422)
 
     def test_generation_rejects_unsupported_ratio_before_upstream_call(self):
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": "server-secret"}, clear=True):
