@@ -890,7 +890,7 @@ ${exactText.concat(details).join("\n")}`;
         ? `- Speaker: place the attached "${state.speakerName}" on the right, using about 35–40% of the canvas. Preserve identity and natural proportions; keep the face clear and do not overlap the logo, headline or footer.`
         : "- No speaker photo is supplied. Do not reserve a portrait frame, silhouette or empty photo area.";
       return `ASSETS & LAYOUT
-- Logo zone: reserve a clean, empty logo tile at top-left for the official logo that will be placed after generation. Do not draw, spell, approximate, recolor, crop, replace or duplicate any logo or wordmark in that tile or elsewhere.
+- Logo zone: reserve a clean, empty safe box in the top-left, with at least one mark-tile of clear space around it. The app will place the approved logo inside this box using uniform proportional fitting; do not draw, spell, approximate, recolor, crop, replace or duplicate any logo or wordmark there or elsewhere.
 ${speakerRule}
 - Keep the headline left/center and footer/CTA at the bottom within safe margins. Return the finished poster artwork with the speaker placed when supplied; the official logo is composited afterward.`;
     }
@@ -1042,14 +1042,18 @@ Motif: ${state.motif}. ${people}${direction}`;
       const context = canvas.getContext("2d");
       context.drawImage(poster, 0, 0);
 
-      const margin = Math.max(4, Math.round(logoImage.naturalHeight / 8));
-      if (logoImage.naturalWidth + margin * 2 > canvas.width || logoImage.naturalHeight + margin * 2 > canvas.height) {
-        throw new Error("The approved logo is larger than the generated canvas; no resizing was applied.");
-      }
+      const margin = Math.max(24, Math.round(canvas.width * 0.035));
+      const safeWidth = Math.round(canvas.width * 0.24);
+      const safeHeight = Math.round(canvas.height * 0.16);
       context.fillStyle = logo.dark ? "#090C08" : "#FFFFFF";
-      context.fillRect(0, 0, logoImage.naturalWidth + margin * 2, logoImage.naturalHeight + margin * 2);
-      context.imageSmoothingEnabled = false;
-      context.drawImage(logoImage, margin, margin);
+      context.fillRect(0, 0, safeWidth + margin * 2, safeHeight + margin * 2);
+      const scale = Math.min(safeWidth / logoImage.naturalWidth, safeHeight / logoImage.naturalHeight);
+      const drawWidth = Math.round(logoImage.naturalWidth * scale);
+      const drawHeight = Math.round(logoImage.naturalHeight * scale);
+      const drawX = margin + Math.round((safeWidth - drawWidth) / 2);
+      const drawY = margin + Math.round((safeHeight - drawHeight) / 2);
+      context.imageSmoothingEnabled = true;
+      context.drawImage(logoImage, drawX, drawY, drawWidth, drawHeight);
       return canvas.toDataURL("image/png");
     }
 
