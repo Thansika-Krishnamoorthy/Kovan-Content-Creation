@@ -222,6 +222,18 @@
     .copy-image-btn.copied { background: var(--jade); }
     .copy-image-btn.failed { background: var(--spark); }
     .clipboard-hint { margin: 8px 0 0; color: var(--grey); font-size: 10px; line-height: 1.4; }
+    .generate-panel { border-top: 1px solid var(--line); padding: 12px; background: var(--mist); }
+    .generate-btn { width: 100%; }
+    .generate-btn:disabled { opacity: .65; cursor: wait; }
+    .generate-status { margin: 8px 0 0; color: var(--grey); font-size: 12px; }
+    .generate-status.error { color: var(--spark); }
+    .generate-status.success { color: var(--jade); }
+    .generated-result { margin-top: 12px; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--paper); }
+    .generated-result[hidden] { display: none; }
+    .generated-result img { display: block; width: 100%; max-height: 65vh; object-fit: contain; background: var(--ink); border-radius: var(--radius-sm); }
+    .generated-meta { margin-top: 8px; color: var(--grey); font-size: 11px; }
+    .generated-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .generated-actions .btn { flex: 1; }
     .rules {
       display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px;
     }
@@ -255,14 +267,14 @@
       <div>
         <div class="brand-row">
           <img class="brand-logo" src="brand-kit/kovan_logo_square.jpg" alt="Kovan Labs" />
-          <span class="eyebrow"> KOVAN LABS . Offline prompt studio</span>
+          <span class="eyebrow"> KOVAN LABS . Seedream poster studio</span>
         </div>
         <h1>Swipe-ready slides<br>in the <em>Kovan</em> system.</h1>
         <p class="lede">Lock identity once, optionally add a speaker photo, then pick a series and slide. Use the recommended approved logo or choose another approved variant; both assets stay visible beside the prompt.</p>
       </div>
       <div class="hero-card">
         <strong>How it works</strong>
-        <p>This page prepares the handoff: attach the selected official logo, optionally attach the speaker photo, paste the prompt, and require the image model to return the complete poster with both supplied assets in place.</p>
+        <p>This page builds the prompt, sends it to Seedream through the local FastAPI server, and places the selected official logo back onto the finished poster unchanged.</p>
       </div>
     </header>
 
@@ -413,6 +425,7 @@
                   <option value="ChatGPT / DALL·E">ChatGPT / DALL·E</option>
                   <option value="Midjourney">Midjourney</option>
                   <option value="Generic image model">Generic</option>
+                  <option value="OpenRouter · Seedream 4.5" selected>OpenRouter · Seedream 4.5</option>
                 </select>
               </div>
               <div>
@@ -480,8 +493,20 @@
             <button type="button" class="btn btn-ghost" id="downloadBtn">.txt</button>
             <button type="button" class="btn btn-ghost" id="pageBtn">.html</button>
           </div>
+          <div class="generate-panel">
+            <button type="button" class="btn btn-primary generate-btn" id="generateBtn">Generate poster</button>
+            <p class="generate-status" id="generateStatus" role="status" aria-live="polite">Ready to generate with Seedream 4.5.</p>
+            <div class="generated-result" id="generatedResult" hidden>
+              <img id="generatedPoster" alt="Generated Kovan Labs poster" />
+              <div class="generated-meta" id="generatedMeta"></div>
+              <div class="generated-actions">
+                <button type="button" class="btn btn-primary" id="downloadPosterBtn">Download PNG</button>
+                <button type="button" class="btn btn-ghost" id="regenerateBtn">Generate again</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <p class="hint">Attach the displayed official logo and optional speaker photo before pasting the prompt. The returned poster must contain the supplied logo in the top-left zone.</p>
+        <p class="hint">Generation requires this page to run through FastAPI with an <code>OPENROUTER_API_KEY</code>. The returned download always uses the original selected logo asset.</p>
       </aside>
     </div>
 
@@ -691,6 +716,14 @@
     const promptSpeakerName = document.getElementById("promptSpeakerName");
     const copyLogoBtn = document.getElementById("copyLogoBtn");
     const copySpeakerBtn = document.getElementById("copySpeakerBtn");
+    const generateBtn = document.getElementById("generateBtn");
+    const regenerateBtn = document.getElementById("regenerateBtn");
+    const generateStatus = document.getElementById("generateStatus");
+    const generatedResult = document.getElementById("generatedResult");
+    const generatedPoster = document.getElementById("generatedPoster");
+    const generatedMeta = document.getElementById("generatedMeta");
+    const downloadPosterBtn = document.getElementById("downloadPosterBtn");
+    let compositedPosterDataUrl = "";
 
     function field(name) {
       const el = form.elements[name];
@@ -854,9 +887,9 @@ ${exactText.concat(details).join("\n")}`;
         ? `- Speaker: place the attached "${state.speakerName}" on the right, using about 35–40% of the canvas. Preserve identity and natural proportions; keep the face clear and do not overlap the logo, headline or footer.`
         : "- No speaker photo is supplied. Do not reserve a portrait frame, silhouette or empty photo area.";
       return `ASSETS & LAYOUT
-- Logo: use the exact attached "${state.logo.file}" (${state.logo.use}) at top-left. It must appear in the finished poster; never leave its zone blank. Preserve its complete artwork, colors, transparency and proportions—do not redraw, edit, crop or replace it. Keep one logo-tile of clear space; if missing, request it.
+- Logo zone: reserve a clean, empty logo tile at top-left for the official logo that will be placed after generation. Do not draw, spell, approximate, recolor, crop, replace or duplicate any logo or wordmark in that tile or elsewhere.
 ${speakerRule}
-- Keep the headline left/center and footer/CTA at the bottom within safe margins. Return the poster with all supplied assets already placed.`;
+- Keep the headline left/center and footer/CTA at the bottom within safe margins. Return the finished poster artwork with the speaker placed when supplied; the official logo is composited afterward.`;
     }
 
     function buildStyleBlock(state) {
@@ -965,6 +998,89 @@ Motif: ${state.motif}. ${people}${direction}`;
       promptStats.textContent = `${words} words · ${prompt.length} characters`;
     }
 
+    function aspectRatioForFormat(value) {
+      if (value.startsWith("4:5")) return "4:5";
+      if (value.startsWith("1:1")) return "1:1";
+      if (value.startsWith("9:16")) return "9:16";
+      return "3:4";
+    }
+
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error("Could not load generated image or logo."));
+        image.src = src;
+      });
+    }
+
+    async function compositePoster(generatedDataUrl) {
+      const [poster, logoImage] = await Promise.all([loadImage(generatedDataUrl), loadImage(activeLogo().dataUri)]);
+      const canvas = document.createElement("canvas");
+      canvas.width = poster.naturalWidth;
+      canvas.height = poster.naturalHeight;
+      const context = canvas.getContext("2d");
+      context.drawImage(poster, 0, 0);
+
+      const logo = activeLogo();
+      const margin = Math.round(canvas.width * 0.04);
+      const tileWidth = Math.round(canvas.width * 0.24);
+      const tileHeight = Math.round(canvas.height * 0.17);
+      context.fillStyle = logo.dark ? "#090C08" : "#FFFFFF";
+      context.fillRect(0, 0, margin + tileWidth + margin, margin + tileHeight + margin);
+
+      const scale = Math.min(tileWidth / logoImage.naturalWidth, tileHeight / logoImage.naturalHeight);
+      const drawWidth = Math.round(logoImage.naturalWidth * scale);
+      const drawHeight = Math.round(logoImage.naturalHeight * scale);
+      context.drawImage(logoImage, margin, margin, drawWidth, drawHeight);
+      return canvas.toDataURL("image/png");
+    }
+
+    function setGenerationStatus(message, state = "") {
+      generateStatus.textContent = message;
+      generateStatus.className = `generate-status${state ? ` ${state}` : ""}`;
+    }
+
+    async function generatePoster() {
+      generateBtn.disabled = true;
+      regenerateBtn.disabled = true;
+      generatedResult.hidden = true;
+      setGenerationStatus("Generating poster with Seedream 4.5…");
+      const body = new FormData();
+      body.append("prompt", output.textContent);
+      body.append("aspect_ratio", aspectRatioForFormat(field("format")));
+      if (speakerPhoto) body.append("speaker", speakerPhoto, speakerPhoto.name);
+
+      try {
+        const response = await fetch("/api/generate", { method: "POST", body });
+        let result;
+        try { result = await response.json(); } catch { throw new Error("The server returned an invalid response."); }
+        if (!response.ok) throw new Error(result.detail || "Poster generation failed.");
+        compositedPosterDataUrl = await compositePoster(result.image);
+        generatedPoster.src = compositedPosterDataUrl;
+        generatedPoster.alt = `${field("brand") || "Kovan Labs"} generated poster`;
+        const cost = result.usage?.cost;
+        generatedMeta.textContent = cost == null ? "Seedream 4.5 · 2K · logo composited from the approved source asset" : `Seedream 4.5 · 2K · ${Number(cost).toFixed(4)} USD · logo composited from the approved source asset`;
+        generatedResult.hidden = false;
+        setGenerationStatus("Poster ready.", "success");
+      } catch (error) {
+        setGenerationStatus(error instanceof Error ? error.message : "Poster generation failed.", "error");
+      } finally {
+        generateBtn.disabled = false;
+        regenerateBtn.disabled = false;
+      }
+    }
+
+    function downloadPoster() {
+      if (!compositedPosterDataUrl) return;
+      const safe = (field("brand") || "kovan-labs").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const role = (field("role") || "poster").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const link = document.createElement("a");
+      link.href = compositedPosterDataUrl;
+      link.download = `${safe}-${currentSeries}-${role}.png`;
+      link.click();
+    }
+
     document.getElementById("modeSeg").addEventListener("click", (e) => {
       const btn = e.target.closest("button");
       if (!btn) return;
@@ -992,6 +1108,9 @@ Motif: ${state.motif}. ${people}${direction}`;
 
     copyLogoBtn.addEventListener("click", () => copyImage(promptLogoImage, copyLogoBtn, "Copy logo"));
     copySpeakerBtn.addEventListener("click", () => copyImage(promptSpeakerImage, copySpeakerBtn, "Copy speaker"));
+    generateBtn.addEventListener("click", generatePoster);
+    regenerateBtn.addEventListener("click", generatePoster);
+    downloadPosterBtn.addEventListener("click", downloadPoster);
 
     form.addEventListener("input", render);
     form.addEventListener("change", render);
