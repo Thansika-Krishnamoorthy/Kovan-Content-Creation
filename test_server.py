@@ -65,6 +65,7 @@ class PosterApiTests(unittest.TestCase):
         html = server.HTML_FILE.read_text(encoding="utf-8")
         self.assertIn("Do not add labels, captions, keys, palettes", html)
         self.assertIn("Do not render a logo, company name", html)
+        self.assertIn("empty outlined rectangle", html)
         self.assertNotIn("Use Paper #FFFFFF", html)
         self.assertNotIn("Poppins 600/700", html)
 
@@ -96,6 +97,7 @@ class PosterApiTests(unittest.TestCase):
         upstream_prompt = FakeAsyncClient.last_json["prompt"]
         self.assertIn("Never display palette labels", upstream_prompt)
         self.assertIn("Do not render any logo", upstream_prompt)
+        self.assertIn("empty outlined rectangle", upstream_prompt)
 
     def test_generation_rejects_invalid_image_contents(self):
         class InvalidUpload(FakeUpload):

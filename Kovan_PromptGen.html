@@ -974,8 +974,8 @@ ${exactText.concat(details).join("\n")}`;
         ? `- Speaker: place the attached "${state.speakerName}" on the right, using about 35–40% of the canvas. Preserve identity and natural proportions; keep the face clear and do not overlap the logo, headline or footer.`
         : "- No speaker photo is supplied. Do not reserve a portrait frame, silhouette or empty photo area.";
       return `ASSETS & LAYOUT
-- Leave a clean, completely blank top-left logo safe zone approximately 28% of the canvas wide and 18% high. Nothing may sit behind, under, beside, or overlap this zone—not text, pills, borders, shapes, motifs, or illustrations.
-- Do not render a logo, company name, wordmark, initials, symbol, placeholder, or brand mark anywhere. The original approved logo is composited after generation.
+- Create one simple, empty outlined rectangle in the top-left, approximately 28% of the canvas wide and 18% high, as the logo frame. Keep its interior and surrounding clear: no text, icons, pills, shapes, motifs, or illustrations may overlap it.
+- Do not render a logo, company name, wordmark, initials, symbol, placeholder, or brand mark anywhere. The original approved logo is composited over the outlined frame after generation.
 ${speakerRule}
 - Keep the headline left/center and footer/CTA at the bottom within safe margins. Return finished poster artwork with the speaker placed when supplied.`;
     }
@@ -1134,17 +1134,10 @@ Motif: ${state.motif}. ${people}${direction}`;
       );
       const drawWidth = Math.round(logoImage.naturalWidth * scale);
       const drawHeight = Math.round(logoImage.naturalHeight * scale);
-      // One logo tile is approximately one third of the lockup's shorter edge.
-      const clearSpace = Math.max(12, Math.round(Math.min(drawWidth, drawHeight) / 3));
-      const drawX = margin;
-      const drawY = margin;
-      context.fillStyle = logo.dark ? "#090C08" : "#FFFFFF";
-      context.fillRect(
-        Math.max(0, drawX - clearSpace),
-        Math.max(0, drawY - clearSpace),
-        drawWidth + clearSpace * 2,
-        drawHeight + clearSpace * 2
-      );
+      // Place the unmodified logo inside Seedream's requested outlined frame.
+      const frameInset = Math.max(16, Math.round(canvas.width * 0.01));
+      const drawX = margin + frameInset;
+      const drawY = margin + frameInset;
       context.imageSmoothingEnabled = true;
       context.imageSmoothingQuality = "high";
       context.drawImage(logoImage, drawX, drawY, drawWidth, drawHeight);
