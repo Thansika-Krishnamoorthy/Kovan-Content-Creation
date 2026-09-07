@@ -65,10 +65,10 @@ class PosterApiTests(unittest.TestCase):
         html = server.HTML_FILE.read_text(encoding="utf-8")
         self.assertIn("Do not add labels, captions, keys, palettes", html)
         self.assertIn("Do not render a logo, company name", html)
-        self.assertIn("empty outlined rectangle", html)
         self.assertIn("continuous part of the poster background", html)
         self.assertIn("The selected official logo file", html)
         self.assertIn('state.tool === "OpenRouter · Seedream 4.5"', html)
+        self.assertNotIn("empty outlined rectangle", html)
         self.assertNotIn("Use Paper #FFFFFF", html)
         self.assertNotIn("Poppins 600/700", html)
 
