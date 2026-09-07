@@ -321,9 +321,9 @@
               <label for="logoChoice">Logo</label>
               <select class="logo-select" id="logoChoice" name="logoChoice">
                 <option value="auto">Auto recommendation</option>
-                <option value="square-light">Square logo — light background</option>
-                <option value="horizontal-white">Horizontal white — dark background</option>
-                <option value="vertical-white">Vertical white — dark narrow layout</option>
+                <option value="square-light">Vertical lockup — light background</option>
+                <option value="horizontal-white">Monochrome white — dark background</option>
+                <option value="vertical-white">Vertical lockup — light background</option>
               </select>
               <div class="recommended-logo">
                 <div class="recommended-logo-preview" id="recommendedLogoPreview">
@@ -467,7 +467,7 @@
               <div class="prompt-asset">
                 <div class="prompt-asset-preview" id="promptLogoPreview"><img id="promptLogoImage" alt="Recommended logo" /></div>
                 <div class="prompt-asset-copy">
-                  <b>Attach logo to image model</b>
+                  <b>Use approved logo in final poster</b>
                   <span id="promptLogoName">kovan_logo_square.jpg</span>
                   <div class="asset-actions">
                     <button class="copy-image-btn" id="copyLogoBtn" type="button">Copy logo</button>
@@ -526,27 +526,30 @@
 
     const logoInventory = {
       "square-light": {
-        file: "kovan_logo_square.jpg",
-        name: "Square logo",
+        file: "logo_vertical.png",
+        name: "Vertical logo",
         reason: "Best contrast on the light Kovan-first logo zone.",
         use: "a clean Paper #FFFFFF zone",
         dark: false,
+        sourceUrl: "/brand-assets/logo_vertical.png",
         dataUri: embeddedLogos["square-light"]
       },
       "horizontal-white": {
-        file: "logo_horizontal.png",
-        name: "Horizontal white logo",
+        file: "logo_mono_white.png",
+        name: "White monochrome logo",
         reason: "Best contrast on the dark campaign-energy logo zone.",
         use: "a clean Ink #090C08 zone",
         dark: true,
+        sourceUrl: "/brand-assets/logo_mono_white.png",
         dataUri: embeddedLogos["horizontal-white"]
       },
       "vertical-white": {
-        file: "logo_vertical_white.svg",
-        name: "Vertical white logo",
-        reason: "Approved for narrow dark layouts where a vertical lockup fits best.",
-        use: "a clean Ink #090C08 zone",
-        dark: true,
+        file: "logo_vertical.png",
+        name: "Vertical logo",
+        reason: "Approved vertical lockup for square and centered contexts.",
+        use: "a clean Paper #FFFFFF zone",
+        dark: false,
+        sourceUrl: "/brand-assets/logo_vertical.png",
         dataUri: embeddedLogos["vertical-white"]
       }
     };
@@ -745,7 +748,7 @@
       logoChoiceSelect.options[0].textContent = `Auto — ${recommended.name} (recommended)`;
       [recommendedLogoPreview, promptLogoPreview].forEach(el => el.classList.toggle("dark", logo.dark));
       [recommendedLogoImage, promptLogoImage].forEach(image => {
-        image.src = logo.dataUri;
+        image.src = logo.sourceUrl || logo.dataUri;
         image.alt = `${logoChoice === "auto" ? "Recommended" : "Selected"} ${logo.name}`;
       });
       logoSelectionBadge.textContent = logoChoice === "auto" ? "Recommended" : "Manual choice";
@@ -755,7 +758,7 @@
         : `Selected manually. Auto recommendation: ${recommended.name}. Embedded Base64 preview.`;
       promptLogoName.textContent = logo.file;
       [recommendedLogoDownload, promptLogoDownload].forEach(link => {
-        link.href = logo.dataUri;
+        link.href = logo.sourceUrl || logo.dataUri;
         link.download = logo.file;
       });
     }
@@ -894,7 +897,7 @@ ${speakerRule}
 
     function buildStyleBlock(state) {
       const palette = state.visualMode === "energy"
-        ? "Campaign energy: Ink #090C08 or Spark #F14924 field, Paper #FFFFFF display text; use Amber #FFBE00, Jade #00A86B or Cobalt #0066A4 sparingly."
+        ? "Campaign energy: Ink #090C08 or Paper #FFFFFF field, Paper #FFFFFF or Ink #090C08 display text; Spark #F14924 is the primary accent and stays near 10%, with Amber #FFBE00, Jade #00A86B or Cobalt #0066A4 used sparingly."
         : "Kovan-first 60/30/10: Paper #FFFFFF/Mist #F4F5F4, Ink #090C08 structure, about 10% Spark #F14924, and at most two accents from Amber #FFBE00, Jade #00A86B or Cobalt #0066A4.";
       const people = state.speakerName
         ? "The supplied speaker is the only photographic person; simplify supporting character artwork."
@@ -905,6 +908,16 @@ ${palette}
 Bold sentence-case Poppins-style heading; Inter-style supporting text. ${state.language}. Keep copy brief and legible.
 Hero: ${state.illustration || "one clear visual that supports the headline."}
 Motif: ${state.motif}. ${people}${direction}`;
+    }
+
+    function buildBrandRulesBlock() {
+      return `BRAND RULES — follow Brand Assets/design.md exactly
+- Use only approved logo files from Brand Assets; never redraw, recolor, rotate, crop, stretch, skew, distort, add effects to, or replace the logo.
+- Preserve one mark-tile height of clear space around the logo; horizontal lockups are at least 120px wide and marks at least 24px where dimensions are relevant.
+- Use Poppins 600/700 for headings and Inter 400/500/600 for body/UI text. Use sentence case; do not use Poppins for long body copy.
+- Use Paper #FFFFFF, Mist #F4F5F4, Field #EDEEEC, Ink #090C08, Body #1A1C19, Grey #5A5F58, Spark #F14924, Amber #FFBE00, Jade #00A86B, and Cobalt #0066A4 only.
+- Spark is the only primary accent and should remain a seasoning; use at most two secondary accents. Never use Amber as text on light, pure black, legacy teal, neon glow, glassmorphism, or logo reconstruction.
+- Use at most one approved graphic motif behind content. Keep the composition clean, engineered, accessible, and benefit-led.`;
     }
 
     function compactAvoidList(value) {
@@ -939,6 +952,7 @@ Motif: ${state.motif}. ${people}${direction}`;
       const sections = [
         `Create one ${state.format} ${state.role} poster for ${state.brand}, ready for ${state.tool}. Return a finished flat design, not a mockup.`,
         buildContextBlock(state),
+        buildBrandRulesBlock(),
         buildContentBlock(state),
         buildAssetLayoutBlock(state),
         buildStyleBlock(state),
@@ -1020,24 +1034,22 @@ Motif: ${state.motif}. ${people}${direction}`;
     }
 
     async function compositePoster(generatedDataUrl) {
-      const [poster, logoImage] = await Promise.all([loadImage(generatedDataUrl), loadImage(activeLogo().dataUri)]);
+      const logo = activeLogo();
+      const [poster, logoImage] = await Promise.all([loadImage(generatedDataUrl), loadImage(logo.sourceUrl || logo.dataUri)]);
       const canvas = document.createElement("canvas");
       canvas.width = poster.naturalWidth;
       canvas.height = poster.naturalHeight;
       const context = canvas.getContext("2d");
       context.drawImage(poster, 0, 0);
 
-      const logo = activeLogo();
-      const margin = Math.round(canvas.width * 0.04);
-      const tileWidth = Math.round(canvas.width * 0.24);
-      const tileHeight = Math.round(canvas.height * 0.17);
+      const margin = Math.max(4, Math.round(logoImage.naturalHeight / 8));
+      if (logoImage.naturalWidth + margin * 2 > canvas.width || logoImage.naturalHeight + margin * 2 > canvas.height) {
+        throw new Error("The approved logo is larger than the generated canvas; no resizing was applied.");
+      }
       context.fillStyle = logo.dark ? "#090C08" : "#FFFFFF";
-      context.fillRect(0, 0, margin + tileWidth + margin, margin + tileHeight + margin);
-
-      const scale = Math.min(tileWidth / logoImage.naturalWidth, tileHeight / logoImage.naturalHeight);
-      const drawWidth = Math.round(logoImage.naturalWidth * scale);
-      const drawHeight = Math.round(logoImage.naturalHeight * scale);
-      context.drawImage(logoImage, margin, margin, drawWidth, drawHeight);
+      context.fillRect(0, 0, logoImage.naturalWidth + margin * 2, logoImage.naturalHeight + margin * 2);
+      context.imageSmoothingEnabled = false;
+      context.drawImage(logoImage, margin, margin);
       return canvas.toDataURL("image/png");
     }
 
