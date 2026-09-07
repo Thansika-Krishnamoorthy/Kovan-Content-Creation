@@ -61,6 +61,13 @@ class PosterApiTests(unittest.TestCase):
             self.assertTrue((server.BRAND_ASSETS_DIR / filename).is_file())
             self.assertIn(f'/brand-assets/{filename}', html)
 
+    def test_model_prompt_uses_visual_direction_not_brand_spec_text(self):
+        html = server.HTML_FILE.read_text(encoding="utf-8")
+        self.assertIn("Do not add labels, captions, keys, palettes", html)
+        self.assertIn("Do not render a logo, company name", html)
+        self.assertNotIn("Use Paper #FFFFFF", html)
+        self.assertNotIn("Poppins 600/700", html)
+
     def test_health_endpoint_is_public(self):
         self.assertEqual(self.run_async(server.health()), {"status": "ok"})
 
@@ -86,6 +93,9 @@ class PosterApiTests(unittest.TestCase):
         self.assertTrue(result["image"].startswith("data:image/png;base64,"))
         self.assertEqual(FakeAsyncClient.last_json["aspect_ratio"], "9:16")
         self.assertEqual(len(FakeAsyncClient.last_json["input_references"]), 1)
+        upstream_prompt = FakeAsyncClient.last_json["prompt"]
+        self.assertIn("Never display palette labels", upstream_prompt)
+        self.assertIn("Do not render any logo", upstream_prompt)
 
     def test_generation_rejects_invalid_image_contents(self):
         class InvalidUpload(FakeUpload):

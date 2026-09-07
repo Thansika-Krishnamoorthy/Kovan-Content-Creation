@@ -464,7 +464,7 @@
               </div>
               <div class="span-2">
                 <label>Hard nos</label>
-                <input name="nos" type="text" value="no legacy teal, no pure black #000, no stock handshake, no lightbulb, no rocket, no neon glow, no glassmorphism, no photoreal crowd, no poster-on-a-wall mockup, no reconstructed or recolored logo" />
+                <input name="nos" type="text" value="no legacy teal, no pure black, no stock handshake, no lightbulb, no rocket, no neon glow, no glassmorphism, no photoreal crowd, no poster-on-a-wall mockup, no reconstructed or recolored logo" />
               </div>
             </div>
           </div>
@@ -974,35 +974,32 @@ ${exactText.concat(details).join("\n")}`;
         ? `- Speaker: place the attached "${state.speakerName}" on the right, using about 35–40% of the canvas. Preserve identity and natural proportions; keep the face clear and do not overlap the logo, headline or footer.`
         : "- No speaker photo is supplied. Do not reserve a portrait frame, silhouette or empty photo area.";
       return `ASSETS & LAYOUT
-- Place the exact attached logo in the top-left safe zone. Do not recreate or modify it. The final poster must include the logo; do not leave a placeholder.
-- Reserve a clean, empty top-left exclusion zone approximately 28% of the canvas wide and 18% high, with at least one mark-tile of clear space around it. The final composited logo must remain compact: no more than 22% of the canvas width or 11% of its height. Nothing may sit behind, under, beside, or overlap this zone—not text, pills, borders, shapes, motifs, or illustrations. Do not draw, spell, approximate, recolor, crop, replace or duplicate any logo or wordmark there or elsewhere.
+- Leave a clean, completely blank top-left logo safe zone approximately 28% of the canvas wide and 18% high. Nothing may sit behind, under, beside, or overlap this zone—not text, pills, borders, shapes, motifs, or illustrations.
+- Do not render a logo, company name, wordmark, initials, symbol, placeholder, or brand mark anywhere. The original approved logo is composited after generation.
 ${speakerRule}
-- Keep the headline left/center and footer/CTA at the bottom within safe margins. Return the finished poster artwork with the speaker placed when supplied; the official logo is composited afterward.`;
+- Keep the headline left/center and footer/CTA at the bottom within safe margins. Return finished poster artwork with the speaker placed when supplied.`;
     }
 
     function buildStyleBlock(state) {
       const palette = state.visualMode === "energy"
-        ? "Campaign energy: Ink #090C08 or Paper #FFFFFF field, Paper #FFFFFF or Ink #090C08 display text; Spark #F14924 is the primary accent and stays near 10%, with Amber #FFBE00, Jade #00A86B or Cobalt #0066A4 used sparingly."
-        : "Kovan-first 60/30/10: Paper #FFFFFF/Mist #F4F5F4, Ink #090C08 structure, about 10% Spark #F14924, and at most two accents from Amber #FFBE00, Jade #00A86B or Cobalt #0066A4.";
+        ? "Campaign energy: a confident dark or light field, strong near-black or white display text, one vivid warm orange-red accent, and no more than two restrained supporting accents."
+        : "Kovan-first: a calm warm-white or soft-grey field, dark readable structure, one vivid warm orange-red accent, and no more than two restrained supporting accents.";
       const people = state.speakerName
         ? "The supplied speaker is the only photographic person; simplify supporting character artwork."
         : "If people appear, use flat, geometric contemporary illustration only.";
       const direction = state.extras ? ` Direction: ${state.extras}` : "";
       return `STYLE
 ${palette}
-Bold sentence-case Poppins-style heading; Inter-style supporting text. ${state.language}. Keep copy brief and legible.
+Bold sentence-case geometric sans-serif heading; simple sans-serif supporting text. ${state.language}. Keep copy brief and legible.
 Hero: ${state.illustration || "one clear visual that supports the headline."}
 Motif: ${state.motif}. ${people}${direction}`;
     }
 
     function buildBrandRulesBlock() {
-      return `BRAND RULES — follow Brand Assets/design.md exactly
-- Use only approved logo files from Brand Assets; never redraw, recolor, rotate, crop, stretch, skew, distort, add effects to, or replace the logo.
-- Preserve one mark-tile height of clear space around the logo; horizontal lockups are at least 120px wide and marks at least 24px where dimensions are relevant.
-- Use Poppins 600/700 for headings and Inter 400/500/600 for body/UI text. Use sentence case; do not use Poppins for long body copy.
-- Use Paper #FFFFFF, Mist #F4F5F4, Field #EDEEEC, Ink #090C08, Body #1A1C19, Grey #5A5F58, Spark #F14924, Amber #FFBE00, Jade #00A86B, and Cobalt #0066A4 only.
-- Spark is the only primary accent and should remain a seasoning; use at most two secondary accents. Never use Amber as text on light, pure black, legacy teal, neon glow, glassmorphism, or logo reconstruction.
-- Use at most one approved graphic motif behind content. Keep the composition clean, engineered, accessible, and benefit-led.`;
+      return `OUTPUT RULES
+- Display only the supplied event copy: the headline, optional event details, and footer/CTA. Do not add labels, captions, keys, palettes, specifications, colour names, hex codes, font names, style names, proportions, instructions, design notes, or brand-guideline text.
+- Do not include a colour swatch legend, a typography legend, or a brand-system reference anywhere in the artwork.
+- Use sentence case, a clean professional composition, and at most one subtle graphic motif. Avoid neon glow, glass effects, pure black, legacy teal, and clutter.`;
     }
 
     function compactAvoidList(value) {

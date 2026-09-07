@@ -100,12 +100,11 @@ async def generate_poster(
     payload: dict = {
         "model": MODEL,
         "prompt": (
-            f"{prompt}\n\nPlace the exact attached logo in the top-left safe zone. Do not recreate or modify it. "
-            "The final poster must include the logo; do not leave a placeholder. "
+            f"{prompt}\n\nLeave the top-left logo safe zone blank. "
             "Reserve a clean, empty top-left logo exclusion zone approximately 28% of the canvas wide and 18% high. "
-            "Keep the final composited logo compact: no more than 22% of the canvas width or 11% of its height. "
-            "Nothing may appear behind, under, beside, or overlap this zone: no text, pills, borders, shapes, motifs, illustrations, logos, or wordmarks. "
-            "Do not draw, spell, approximate, recolor, crop, replace, or duplicate any logo anywhere in the poster."
+            "Nothing may appear behind, under, beside, or overlap this zone: no text, pills, borders, shapes, motifs, or illustrations. "
+            "Do not render any logo, company name, wordmark, initials, or brand mark anywhere; the original official logo is composited after generation. "
+            "Never display palette labels, colour names, hex codes, font names, style names, proportions, specifications, instructions, or design notes in the poster."
         ),
         "resolution": "2K",
         "aspect_ratio": aspect_ratio,
