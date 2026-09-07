@@ -100,10 +100,9 @@ async def generate_poster(
     payload: dict = {
         "model": MODEL,
         "prompt": (
-            f"{prompt}\n\nCreate one simple, empty outlined rectangle in the top-left as the logo frame. "
-            "Make it approximately 28% of the canvas wide and 18% high, with a clear interior and surrounding area. "
-            "Nothing may overlap the logo frame: no text, icons, pills, shapes, motifs, or illustrations. "
-            "Do not render any logo, company name, wordmark, initials, or brand mark anywhere; the original official logo is composited over the frame after generation. "
+            f"{prompt}\n\nLeave a completely blank top-left logo safe zone, approximately 28% of the canvas wide and 18% high. "
+            "It must be a continuous part of the poster background: no rectangle, outline, border, panel, placeholder, text, icons, pills, shapes, motifs, or illustrations. "
+            "Keep all content outside this safe zone. Do not render any logo, company name, wordmark, initials, or brand mark anywhere; the original official logo is composited over the blank safe zone after generation. "
             "Never display palette labels, colour names, hex codes, font names, style names, proportions, specifications, instructions, or design notes in the poster."
         ),
         "resolution": "2K",

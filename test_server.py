@@ -66,6 +66,7 @@ class PosterApiTests(unittest.TestCase):
         self.assertIn("Do not add labels, captions, keys, palettes", html)
         self.assertIn("Do not render a logo, company name", html)
         self.assertIn("empty outlined rectangle", html)
+        self.assertIn("continuous part of the poster background", html)
         self.assertIn("The selected official logo file", html)
         self.assertIn('state.tool === "OpenRouter · Seedream 4.5"', html)
         self.assertNotIn("Use Paper #FFFFFF", html)
@@ -99,7 +100,8 @@ class PosterApiTests(unittest.TestCase):
         upstream_prompt = FakeAsyncClient.last_json["prompt"]
         self.assertIn("Never display palette labels", upstream_prompt)
         self.assertIn("Do not render any logo", upstream_prompt)
-        self.assertIn("empty outlined rectangle", upstream_prompt)
+        self.assertIn("continuous part of the poster background", upstream_prompt)
+        self.assertNotIn("outlined rectangle", upstream_prompt)
 
     def test_generation_rejects_invalid_image_contents(self):
         class InvalidUpload(FakeUpload):
