@@ -66,6 +66,8 @@ class PosterApiTests(unittest.TestCase):
         self.assertIn("Do not add labels, captions, keys, palettes", html)
         self.assertIn("Do not render a logo, company name", html)
         self.assertIn("empty outlined rectangle", html)
+        self.assertIn("The selected official logo file", html)
+        self.assertIn('state.tool === "OpenRouter · Seedream 4.5"', html)
         self.assertNotIn("Use Paper #FFFFFF", html)
         self.assertNotIn("Poppins 600/700", html)
 

@@ -973,9 +973,13 @@ ${exactText.concat(details).join("\n")}`;
       const speakerRule = state.speakerName
         ? `- Speaker: place the attached "${state.speakerName}" on the right, using about 35–40% of the canvas. Preserve identity and natural proportions; keep the face clear and do not overlap the logo, headline or footer.`
         : "- No speaker photo is supplied. Do not reserve a portrait frame, silhouette or empty photo area.";
+      const isSeedream = state.tool === "OpenRouter · Seedream 4.5";
+      const logoRule = isSeedream
+        ? "- Do not render a logo, company name, wordmark, initials, symbol, placeholder, or brand mark anywhere. The original approved logo is composited over the outlined frame after generation."
+        : `- The selected official logo file (${state.logo.file}) must be attached before generation. Place that exact attached image inside the outlined frame. The final poster must include it. Do not redraw, recreate, recolour, crop, stretch, replace, or duplicate the logo.`;
       return `ASSETS & LAYOUT
 - Create one simple, empty outlined rectangle in the top-left, approximately 28% of the canvas wide and 18% high, as the logo frame. Keep its interior and surrounding clear: no text, icons, pills, shapes, motifs, or illustrations may overlap it.
-- Do not render a logo, company name, wordmark, initials, symbol, placeholder, or brand mark anywhere. The original approved logo is composited over the outlined frame after generation.
+${logoRule}
 ${speakerRule}
 - Keep the headline left/center and footer/CTA at the bottom within safe margins. Return finished poster artwork with the speaker placed when supplied.`;
     }
