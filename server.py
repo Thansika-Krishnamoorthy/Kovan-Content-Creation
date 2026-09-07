@@ -99,8 +99,9 @@ async def generate_poster(
     payload: dict = {
         "model": MODEL,
         "prompt": (
-            f"{prompt}\n\nIMPORTANT OUTPUT RULE: leave a clean, empty logo tile in the top-left; "
-            "do not draw, spell, approximate, recolor, or duplicate any logo or wordmark there."
+            f"{prompt}\n\nIMPORTANT OUTPUT RULE: leave a clean, empty top-left logo exclusion zone approximately 38% of the canvas wide and 15% high. "
+            "Nothing may appear behind, under, beside, or overlap this zone: no text, pills, borders, shapes, motifs, illustrations, logos, or wordmarks. "
+            "Do not draw, spell, approximate, recolor, crop, replace, or duplicate any logo anywhere in the poster."
         ),
         "resolution": "2K",
         "aspect_ratio": aspect_ratio,
