@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Annotated
 
 import httpx
+from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -16,6 +17,7 @@ from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).resolve().parent
 HTML_FILE = ROOT / "Kovan_PromptGen.html"
+load_dotenv(ROOT / ".env")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/images"
 MODEL = "bytedance-seed/seedream-4.5"
 MAX_PROMPT_CHARS = 20_000
