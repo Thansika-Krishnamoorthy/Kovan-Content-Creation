@@ -99,7 +99,9 @@ async def generate_poster(
     payload: dict = {
         "model": MODEL,
         "prompt": (
-            f"{prompt}\n\nIMPORTANT OUTPUT RULE: leave a clean, empty top-left logo exclusion zone approximately 38% of the canvas wide and 15% high. "
+            f"{prompt}\n\nPlace the exact attached logo in the top-left safe zone. Do not recreate or modify it. "
+            "The final poster must include the logo; do not leave a placeholder. "
+            "Reserve a clean, empty top-left logo exclusion zone approximately 38% of the canvas wide and 15% high. "
             "Nothing may appear behind, under, beside, or overlap this zone: no text, pills, borders, shapes, motifs, illustrations, logos, or wordmarks. "
             "Do not draw, spell, approximate, recolor, crop, replace, or duplicate any logo anywhere in the poster."
         ),
