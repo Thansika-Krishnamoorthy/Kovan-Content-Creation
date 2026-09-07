@@ -157,6 +157,7 @@
       color: var(--paper); padding: 8px 10px; margin-right: 8px;
       font: 600 12px/1 var(--font-body); cursor: pointer;
     }
+    .external-composite-btn { width: 100%; margin-top: 8px; }
     .recommended-logo { display: grid; grid-template-columns: 120px 1fr; gap: 12px; margin-top: 8px; align-items: center; }
     .logo-select { margin-top: 8px; }
     .recommended-logo-preview {
@@ -357,7 +358,7 @@
                   <span class="recommendation-badge" id="logoSelectionBadge">Auto-selected</span>
                   <strong id="recommendedLogoName">Square logo</strong>
                   <small id="recommendedLogoReason">Best contrast on the light Kovan-first logo zone.</small>
-                  <a class="asset-link" id="recommendedLogoDownload" download>Download logo to attach</a>
+                  <a class="asset-link" id="recommendedLogoDownload" download>Download original logo</a>
                 </div>
               </div>
             </div>
@@ -367,6 +368,14 @@
               <p class="asset-help">Choose one real speaker or event-host photo. Leave empty for an illustrated poster.</p>
               <div class="asset-preview" id="speakerPreview"><span class="asset-help">No speaker photo selected.</span></div>
               <button class="clear-asset" id="clearSpeakerBtn" type="button" hidden>Remove speaker photo</button>
+            </div>
+            <div class="asset-card">
+              <label for="externalPoster">External poster (ChatGPT, optional)</label>
+              <input id="externalPoster" name="externalPoster" type="file" accept="image/png,image/jpeg,image/webp" />
+              <p class="asset-help">Generate a logo-free poster in ChatGPT, download it, then upload it here. This studio adds the exact selected logo file.</p>
+              <div class="asset-preview" id="externalPosterPreview"><span class="asset-help">No external poster selected.</span></div>
+              <button class="btn btn-primary external-composite-btn" id="applyExternalLogoBtn" type="button" disabled>Add exact logo to poster</button>
+              <button class="clear-asset" id="clearExternalPosterBtn" type="button" hidden>Remove external poster</button>
             </div>
           </div>
           <div class="notice">The prompt always reserves the top-left logo zone. If a speaker photo is selected, it also creates a dedicated portrait area; otherwise no empty portrait space is reserved.</div>
@@ -490,10 +499,9 @@
               <div class="prompt-asset">
                 <div class="prompt-asset-preview" id="promptLogoPreview"><img id="promptLogoImage" alt="Recommended logo" /></div>
                 <div class="prompt-asset-copy">
-                  <b>Use approved logo in final poster</b>
+                  <b>Exact logo added after generation</b>
                   <span id="promptLogoName">kovan_logo_square.jpg</span>
                   <div class="asset-actions">
-                    <button class="copy-image-btn" id="copyLogoBtn" type="button">Copy logo</button>
                     <a class="asset-link" id="promptLogoDownload" download>Download</a>
                   </div>
                 </div>
@@ -509,7 +517,7 @@
                 </div>
               </div>
             </div>
-            <p class="clipboard-hint">Copy and paste each image into the generator one at a time, then copy the prompt. If image copying is blocked, use Download or open this page through localhost/HTTPS.</p>
+            <p class="clipboard-hint">For external tools, attach only the speaker photo when needed, then copy the prompt. Generate a logo-free poster, download it, and upload it in “External poster” to add the exact selected logo.</p>
           </div>
           <div class="actions">
             <button type="button" class="btn btn-primary" id="copyBtn">Copy prompt</button>
@@ -751,8 +759,11 @@
     let logoChoice = "auto";
     let speakerPhoto = null;
     let speakerObjectUrl = "";
+    let externalPosterFile = null;
+    let externalPosterObjectUrl = "";
 
     const speakerInput = document.getElementById("speakerPhoto");
+    const externalPosterInput = document.getElementById("externalPoster");
     const logoChoiceSelect = document.getElementById("logoChoice");
     const logoGallery = document.getElementById("logoGallery");
     const logoSelectionBadge = document.getElementById("logoSelectionBadge");
@@ -770,8 +781,10 @@
     const promptSpeakerAsset = document.getElementById("promptSpeakerAsset");
     const promptSpeakerImage = document.getElementById("promptSpeakerImage");
     const promptSpeakerName = document.getElementById("promptSpeakerName");
-    const copyLogoBtn = document.getElementById("copyLogoBtn");
     const copySpeakerBtn = document.getElementById("copySpeakerBtn");
+    const externalPosterPreview = document.getElementById("externalPosterPreview");
+    const applyExternalLogoBtn = document.getElementById("applyExternalLogoBtn");
+    const clearExternalPosterBtn = document.getElementById("clearExternalPosterBtn");
     const generateBtn = document.getElementById("generateBtn");
     const regenerateBtn = document.getElementById("regenerateBtn");
     const generateStatus = document.getElementById("generateStatus");
@@ -915,6 +928,30 @@
       clearSpeakerBtn.hidden = false;
     }
 
+    function renderExternalPosterPreview() {
+      if (externalPosterObjectUrl) URL.revokeObjectURL(externalPosterObjectUrl);
+      externalPosterObjectUrl = "";
+      externalPosterPreview.replaceChildren();
+      applyExternalLogoBtn.disabled = !externalPosterFile;
+      clearExternalPosterBtn.hidden = !externalPosterFile;
+      if (!externalPosterFile) {
+        externalPosterPreview.innerHTML = '<span class="asset-help">No external poster selected.</span>';
+        return;
+      }
+
+      const item = document.createElement("div");
+      item.className = "asset-thumb";
+      const image = document.createElement("img");
+      externalPosterObjectUrl = URL.createObjectURL(externalPosterFile);
+      image.src = externalPosterObjectUrl;
+      image.alt = "External poster preview";
+      const name = document.createElement("span");
+      name.className = "asset-name";
+      name.textContent = cleanFileName(externalPosterFile);
+      item.append(image, name);
+      externalPosterPreview.appendChild(item);
+    }
+
     function readPromptState() {
       const promise = field("promise");
       return {
@@ -972,13 +1009,9 @@ ${exactText.concat(details).join("\n")}`;
       const speakerRule = state.speakerName
         ? `- Speaker: place the attached "${state.speakerName}" on the right, using about 35–40% of the canvas. Preserve identity and natural proportions; keep the face clear and do not overlap the logo, headline or footer.`
         : "- No speaker photo is supplied. Do not reserve a portrait frame, silhouette or empty photo area.";
-      const isSeedream = state.tool === "OpenRouter · Seedream 4.5";
-      const logoRule = isSeedream
-        ? "- Do not render a logo, company name, wordmark, initials, symbol, placeholder, or brand mark anywhere. Do not invent any emblem, monogram, badge, seal, watermark, abstract geometric mark, or logo-like graphic anywhere in the poster. The original approved logo is composited over the blank safe zone after generation."
-        : `- The selected official logo file (${state.logo.file}) must be attached before generation. Place that exact attached image inside the blank safe zone. The final poster must include it. Do not redraw, recreate, recolour, crop, stretch, replace, or duplicate the logo. Do not add any second logo, emblem, monogram, badge, seal, watermark, abstract geometric mark, or logo-like graphic.`;
       return `ASSETS & LAYOUT
 - Leave a completely blank top-left logo safe zone, approximately 28% of the canvas wide and 18% high. It must be a continuous part of the poster background: no rectangle, outline, border, panel, placeholder, text, icons, pills, shapes, motifs, or illustrations. Keep all content outside this safe zone.
-${logoRule}
+- Do not render a logo, company name, wordmark, initials, symbol, placeholder, or brand mark anywhere. Do not invent any emblem, monogram, badge, seal, watermark, abstract geometric mark, or logo-like graphic anywhere in the poster. The exact selected official logo is added after generation from its original source file.
 ${speakerRule}
 - Keep the headline left/center and footer/CTA at the bottom within safe margins. Return finished poster artwork with the speaker placed when supplied.`;
     }
@@ -1137,7 +1170,7 @@ Motif: ${state.motif}. ${people}${direction}`;
       );
       const drawWidth = Math.round(logoImage.naturalWidth * scale);
       const drawHeight = Math.round(logoImage.naturalHeight * scale);
-      // Place the unmodified logo inside Seedream's requested outlined frame.
+      // Place the unmodified logo inside the reserved blank safe zone.
       const frameInset = Math.max(16, Math.round(canvas.width * 0.01));
       const drawX = margin + frameInset;
       const drawY = margin + frameInset;
@@ -1182,6 +1215,30 @@ Motif: ${state.motif}. ${people}${direction}`;
       }
     }
 
+    async function applyExternalPosterLogo() {
+      if (!externalPosterFile) return;
+      applyExternalLogoBtn.disabled = true;
+      generatedResult.hidden = true;
+      setGenerationStatus("Applying the exact selected logo to the external poster…");
+      try {
+        const posterUrl = URL.createObjectURL(externalPosterFile);
+        try {
+          compositedPosterDataUrl = await compositePoster(posterUrl);
+        } finally {
+          URL.revokeObjectURL(posterUrl);
+        }
+        generatedPoster.src = compositedPosterDataUrl;
+        generatedPoster.alt = `${field("brand") || "Kovan Labs"} poster with exact selected logo`;
+        generatedMeta.textContent = "External poster · exact selected source logo composited without AI regeneration";
+        generatedResult.hidden = false;
+        setGenerationStatus("Exact logo applied. Download the final PNG.", "success");
+      } catch (error) {
+        setGenerationStatus(error instanceof Error ? error.message : "Could not apply the logo to this poster.", "error");
+      } finally {
+        applyExternalLogoBtn.disabled = !externalPosterFile;
+      }
+    }
+
     function downloadPoster() {
       if (!compositedPosterDataUrl) return;
       const safe = (field("brand") || "kovan-labs").toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -1212,6 +1269,12 @@ Motif: ${state.motif}. ${people}${direction}`;
       render();
     });
 
+    externalPosterInput.addEventListener("change", () => {
+      externalPosterFile = externalPosterInput.files[0] || null;
+      renderExternalPosterPreview();
+      render();
+    });
+
     clearSpeakerBtn.addEventListener("click", () => {
       speakerInput.value = "";
       speakerPhoto = null;
@@ -1219,8 +1282,15 @@ Motif: ${state.motif}. ${people}${direction}`;
       render();
     });
 
-    copyLogoBtn.addEventListener("click", () => copyImage(promptLogoImage, copyLogoBtn, "Copy logo"));
+    clearExternalPosterBtn.addEventListener("click", () => {
+      externalPosterInput.value = "";
+      externalPosterFile = null;
+      renderExternalPosterPreview();
+      render();
+    });
+
     copySpeakerBtn.addEventListener("click", () => copyImage(promptSpeakerImage, copySpeakerBtn, "Copy speaker"));
+    applyExternalLogoBtn.addEventListener("click", applyExternalPosterLogo);
     generateBtn.addEventListener("click", generatePoster);
     regenerateBtn.addEventListener("click", generatePoster);
     downloadPosterBtn.addEventListener("click", downloadPoster);
