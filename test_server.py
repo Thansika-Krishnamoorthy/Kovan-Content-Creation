@@ -67,8 +67,10 @@ class PosterApiTests(unittest.TestCase):
         self.assertIn("Do not render a logo, company name", html)
         self.assertIn("continuous part of the poster background", html)
         self.assertIn("The selected official logo file", html)
+        self.assertIn("abstract geometric mark", html)
         self.assertIn('state.tool === "OpenRouter · Seedream 4.5"', html)
         self.assertNotIn("empty outlined rectangle", html)
+        self.assertNotIn('value="geometric Ink emblem', html)
         self.assertNotIn("Use Paper #FFFFFF", html)
         self.assertNotIn("Poppins 600/700", html)
 
@@ -100,6 +102,7 @@ class PosterApiTests(unittest.TestCase):
         upstream_prompt = FakeAsyncClient.last_json["prompt"]
         self.assertIn("Never display palette labels", upstream_prompt)
         self.assertIn("Do not render any logo", upstream_prompt)
+        self.assertIn("abstract geometric mark", upstream_prompt)
         self.assertIn("continuous part of the poster background", upstream_prompt)
         self.assertNotIn("outlined rectangle", upstream_prompt)
 

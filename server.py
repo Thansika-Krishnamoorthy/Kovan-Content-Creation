@@ -102,7 +102,7 @@ async def generate_poster(
         "prompt": (
             f"{prompt}\n\nLeave a completely blank top-left logo safe zone, approximately 28% of the canvas wide and 18% high. "
             "It must be a continuous part of the poster background: no rectangle, outline, border, panel, placeholder, text, icons, pills, shapes, motifs, or illustrations. "
-            "Keep all content outside this safe zone. Do not render any logo, company name, wordmark, initials, or brand mark anywhere; the original official logo is composited over the blank safe zone after generation. "
+            "Keep all content outside this safe zone. Do not render any logo, company name, wordmark, initials, or brand mark anywhere; do not invent any emblem, monogram, badge, seal, watermark, abstract geometric mark, or logo-like graphic anywhere in the poster. The original official logo is composited over the blank safe zone after generation. "
             "Never display palette labels, colour names, hex codes, font names, style names, proportions, specifications, instructions, or design notes in the poster."
         ),
         "resolution": "2K",

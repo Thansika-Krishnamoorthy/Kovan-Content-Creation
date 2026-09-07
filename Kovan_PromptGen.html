@@ -457,7 +457,6 @@
                 <select name="motif">
                   <option value="low-opacity four-color dot-wave (sine of Spark, Amber, Jade, Cobalt dots) behind content">Dot-wave</option>
                   <option value="concentric Amber rings with a small Spark four-point starburst">Rings / sparkle</option>
-                  <option value="geometric Ink emblem as a quiet editorial accent">Emblem</option>
                   <option value="one small Spark 4-point starburst as a highlight only">Single spark</option>
                   <option value="no motif — solid paper, mist or Ink panels only">None</option>
                 </select>
@@ -655,7 +654,7 @@
           { id: "c-approach", label: "Approach", role: "approach",
             headline: "We design the loop, then we build the product inside it", punch: "loop",
             footer: "What you leave with",
-            illustration: "Quiet Ink emblem and a circular loop of four tiles echoing the mark.",
+            illustration: "Clean workflow loop using four rounded process cards, with no emblem or logo-like symbol.",
             extras: "" },
           { id: "c-proof", label: "Proof", role: "proof",
             headline: "Weeks, not quarters, to something people can touch", punch: "touch",
@@ -735,7 +734,7 @@
           { id: "s-result", label: "Result", role: "result",
             headline: "Same team. Faster calls. Fewer tools in the way.", punch: "Faster",
             footer: "Want a look at the method?",
-            illustration: "Quiet Jade growth mark and a short numeral reserved as a type overlay.",
+            illustration: "A quiet upward growth path and a short numeral reserved as a type overlay; no logo-like symbol.",
             extras: "Do not invent fake metrics." }
         ]
       }
@@ -975,8 +974,8 @@ ${exactText.concat(details).join("\n")}`;
         : "- No speaker photo is supplied. Do not reserve a portrait frame, silhouette or empty photo area.";
       const isSeedream = state.tool === "OpenRouter · Seedream 4.5";
       const logoRule = isSeedream
-        ? "- Do not render a logo, company name, wordmark, initials, symbol, placeholder, or brand mark anywhere. The original approved logo is composited over the blank safe zone after generation."
-        : `- The selected official logo file (${state.logo.file}) must be attached before generation. Place that exact attached image inside the blank safe zone. The final poster must include it. Do not redraw, recreate, recolour, crop, stretch, replace, or duplicate the logo.`;
+        ? "- Do not render a logo, company name, wordmark, initials, symbol, placeholder, or brand mark anywhere. Do not invent any emblem, monogram, badge, seal, watermark, abstract geometric mark, or logo-like graphic anywhere in the poster. The original approved logo is composited over the blank safe zone after generation."
+        : `- The selected official logo file (${state.logo.file}) must be attached before generation. Place that exact attached image inside the blank safe zone. The final poster must include it. Do not redraw, recreate, recolour, crop, stretch, replace, or duplicate the logo. Do not add any second logo, emblem, monogram, badge, seal, watermark, abstract geometric mark, or logo-like graphic.`;
       return `ASSETS & LAYOUT
 - Leave a completely blank top-left logo safe zone, approximately 28% of the canvas wide and 18% high. It must be a continuous part of the poster background: no rectangle, outline, border, panel, placeholder, text, icons, pills, shapes, motifs, or illustrations. Keep all content outside this safe zone.
 ${logoRule}
@@ -1033,7 +1032,7 @@ Motif: ${state.motif}. ${people}${direction}`;
     function buildPrompt(state) {
       const avoid = [
         compactAvoidList(state.nos),
-        "tiny/unreadable text, clutter, watermarks, invented facts/metrics, misspelled supplied text"
+        "tiny/unreadable text, clutter, watermarks, invented facts/metrics, misspelled supplied text, emblems, monograms, badges, seals, abstract geometric marks, logo-like graphics"
       ].filter(Boolean).join(", ");
       const sections = [
         `Create one ${state.format} ${state.role} poster for ${state.brand}, ready for ${state.tool}. Return a finished flat design, not a mockup.`,
