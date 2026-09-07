@@ -60,6 +60,10 @@ class PosterApiTests(unittest.TestCase):
         for filename in approved_logos:
             self.assertTrue((server.BRAND_ASSETS_DIR / filename).is_file())
             self.assertIn(f'/brand-assets/{filename}', html)
+        self.assertIn('id="logoPicker"', html)
+        self.assertIn('id="logoPickerMenu"', html)
+        self.assertIn('logo-picker-option-image', html)
+        self.assertNotIn('id="logoGallery"', html)
 
     def test_model_prompt_uses_visual_direction_not_brand_spec_text(self):
         html = server.HTML_FILE.read_text(encoding="utf-8")

@@ -158,36 +158,35 @@
       font: 600 12px/1 var(--font-body); cursor: pointer;
     }
     .external-composite-btn { width: 100%; margin-top: 8px; }
-    .recommended-logo { display: grid; grid-template-columns: 120px 1fr; gap: 12px; margin-top: 8px; align-items: center; }
-    .logo-select { margin-top: 8px; }
-    .recommended-logo-preview {
-      height: 92px; display: grid; place-items: center; padding: 10px;
-      border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--paper);
+    .logo-select { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    .logo-picker { position: relative; margin-top: 8px; }
+    .logo-picker summary {
+      min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 7px 10px 7px 12px; border: 1px solid var(--line); border-radius: var(--radius-md);
+      background: var(--mist); color: var(--body); font: 600 13px/1.25 var(--font-body); cursor: pointer;
+      list-style: none;
     }
-    .recommended-logo-preview.dark { background: var(--ink); }
-    .recommended-logo-preview img { display: block; max-width: 100%; max-height: 68px; object-fit: contain; }
-    .logo-gallery {
-      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px; margin-top: 12px;
+    .logo-picker summary::-webkit-details-marker { display: none; }
+    .logo-picker summary::after { content: "⌄"; color: var(--grey); font-size: 16px; }
+    .logo-picker[open] summary { border-color: var(--cobalt); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+    .logo-picker-selected { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .logo-picker-summary-image { width: 76px; height: 32px; object-fit: contain; padding: 3px; background: var(--paper); border-radius: var(--radius-sm); }
+    .logo-picker-summary-image.dark { background: var(--ink); }
+    .logo-picker-menu {
+      position: absolute; z-index: 10; left: 0; right: 0; max-height: 320px; overflow: auto;
+      border: 1px solid var(--cobalt); border-top: 0; border-radius: 0 0 var(--radius-md) var(--radius-md);
+      background: var(--paper); box-shadow: var(--shadow);
     }
-    .logo-card {
-      min-width: 0; min-height: 104px; display: grid; grid-template-rows: 66px auto;
-      gap: 7px; align-items: center; padding: 8px; border: 1px solid var(--line);
-      border-radius: var(--radius-md); background: var(--paper); color: var(--ink);
-      font: 600 10px/1.25 var(--font-body); text-align: left; cursor: pointer;
+    .logo-picker-option {
+      width: 100%; min-height: 50px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 7px 10px 7px 12px; border: 0; border-top: 1px solid var(--line); background: var(--paper);
+      color: var(--body); font: 600 12px/1.25 var(--font-body); text-align: left; cursor: pointer;
     }
-    .logo-card:hover { border-color: var(--grey); }
-    .logo-card.active { border: 2px solid var(--spark); padding: 7px; box-shadow: 0 0 0 2px rgba(241,73,36,.12); }
-    .logo-card-visual {
-      width: 100%; height: 66px; display: grid; place-items: center;
-      padding: 7px; border-radius: var(--radius-sm); background: var(--paper); overflow: hidden;
-    }
-    .logo-card.dark .logo-card-visual { background: var(--ink); }
-    .logo-card img { display: block; max-width: 100%; max-height: 52px; object-fit: contain; }
-    .logo-card span { overflow-wrap: anywhere; }
-    .recommended-logo-copy { display: grid; gap: 4px; }
-    .recommended-logo-copy strong { color: var(--ink); font-size: 13px; }
-    .recommended-logo-copy small { color: var(--grey); font-size: 11px; line-height: 1.35; }
+    .logo-picker-option:first-child { border-top: 0; }
+    .logo-picker-option:hover, .logo-picker-option.active { background: #FFF4F1; }
+    .logo-picker-option.active { color: var(--spark); }
+    .logo-picker-option-image { width: 84px; height: 34px; object-fit: contain; padding: 3px; background: var(--paper); border-radius: var(--radius-sm); flex: 0 0 auto; }
+    .logo-picker-option-image.dark { background: var(--ink); }
     .asset-link { color: var(--cobalt); font-size: 11px; font-weight: 600; text-decoration: none; }
     .asset-link:hover { text-decoration: underline; }
     .recommendation-badge {
@@ -338,7 +337,7 @@
           </div>
           <div class="asset-grid">
             <div class="asset-card">
-              <label for="logoChoice">Logo</label>
+              <label>Logo</label>
               <select class="logo-select" id="logoChoice" name="logoChoice">
                 <option value="auto">Auto recommendation</option>
                 <option value="horizontal">Horizontal — full colour</option>
@@ -349,18 +348,10 @@
                 <option value="mono-white">Horizontal — mono white</option>
                 <option value="mark">K mark only — full colour</option>
               </select>
-              <div class="logo-gallery" id="logoGallery" aria-label="Approved Kovan Labs logos"></div>
-              <div class="recommended-logo">
-                <div class="recommended-logo-preview" id="recommendedLogoPreview">
-                  <img id="recommendedLogoImage" alt="Recommended Kovan Labs logo" />
-                </div>
-                <div class="recommended-logo-copy">
-                  <span class="recommendation-badge" id="logoSelectionBadge">Auto-selected</span>
-                  <strong id="recommendedLogoName">Square logo</strong>
-                  <small id="recommendedLogoReason">Best contrast on the light Kovan-first logo zone.</small>
-                  <a class="asset-link" id="recommendedLogoDownload" download>Download original logo</a>
-                </div>
-              </div>
+              <details class="logo-picker" id="logoPicker">
+                <summary><span class="logo-picker-selected" id="logoPickerLabel">Auto recommendation</span><img class="logo-picker-summary-image" id="logoPickerSelectedImage" alt="Selected logo" /></summary>
+                <div class="logo-picker-menu" id="logoPickerMenu" role="listbox" aria-label="Approved Kovan Labs logos"></div>
+              </details>
             </div>
             <div class="asset-card">
               <label for="speakerPhoto">Speaker photo (optional)</label>
@@ -765,15 +756,12 @@
     const speakerInput = document.getElementById("speakerPhoto");
     const externalPosterInput = document.getElementById("externalPoster");
     const logoChoiceSelect = document.getElementById("logoChoice");
-    const logoGallery = document.getElementById("logoGallery");
-    const logoSelectionBadge = document.getElementById("logoSelectionBadge");
+    const logoPicker = document.getElementById("logoPicker");
+    const logoPickerLabel = document.getElementById("logoPickerLabel");
+    const logoPickerSelectedImage = document.getElementById("logoPickerSelectedImage");
+    const logoPickerMenu = document.getElementById("logoPickerMenu");
     const speakerPreview = document.getElementById("speakerPreview");
     const clearSpeakerBtn = document.getElementById("clearSpeakerBtn");
-    const recommendedLogoPreview = document.getElementById("recommendedLogoPreview");
-    const recommendedLogoImage = document.getElementById("recommendedLogoImage");
-    const recommendedLogoName = document.getElementById("recommendedLogoName");
-    const recommendedLogoReason = document.getElementById("recommendedLogoReason");
-    const recommendedLogoDownload = document.getElementById("recommendedLogoDownload");
     const promptLogoPreview = document.getElementById("promptLogoPreview");
     const promptLogoImage = document.getElementById("promptLogoImage");
     const promptLogoName = document.getElementById("promptLogoName");
@@ -812,50 +800,46 @@
       const recommended = logoInventory[autoRecommendedLogoKey()];
       const logo = activeLogo();
       logoChoiceSelect.options[0].textContent = `Auto — ${recommended.name} (recommended)`;
-      [recommendedLogoPreview, promptLogoPreview].forEach(el => el.classList.toggle("dark", logo.dark));
-      [recommendedLogoImage, promptLogoImage].forEach(image => {
+      promptLogoPreview.classList.toggle("dark", logo.dark);
+      [logoPickerSelectedImage, promptLogoImage].forEach(image => {
         image.src = logo.sourceUrl || logo.dataUri;
         image.alt = `${logoChoice === "auto" ? "Recommended" : "Selected"} ${logo.name}`;
       });
-      logoSelectionBadge.textContent = logoChoice === "auto" ? "Recommended" : "Manual choice";
-      recommendedLogoName.textContent = logo.name;
-      recommendedLogoReason.textContent = logoChoice === "auto"
-        ? logo.reason
-        : `Selected manually. Auto recommendation: ${recommended.name}.`;
+      logoPickerSelectedImage.classList.toggle("dark", logo.dark);
+      logoPickerLabel.textContent = logoChoice === "auto" ? `Auto — ${recommended.name}` : logo.name;
       promptLogoName.textContent = logo.file;
-      [recommendedLogoDownload, promptLogoDownload].forEach(link => {
+      [promptLogoDownload].forEach(link => {
         link.href = logo.sourceUrl || logo.dataUri;
         link.download = logo.file;
       });
-      renderLogoGallery();
+      renderLogoPicker();
     }
 
-    function renderLogoGallery() {
+    function renderLogoPicker() {
       const selectedKey = logoChoice === "auto" ? autoRecommendedLogoKey() : logoChoice;
-      logoGallery.innerHTML = "";
-      Object.entries(logoInventory).forEach(([key, logo]) => {
-        const card = document.createElement("button");
-        card.type = "button";
-        card.className = `logo-card${logo.dark ? " dark" : ""}${key === selectedKey ? " active" : ""}`;
-        card.setAttribute("aria-pressed", key === selectedKey ? "true" : "false");
-        card.title = `Select ${logo.file}`;
-
-        const visual = document.createElement("span");
-        visual.className = "logo-card-visual";
+      const recommended = logoInventory[autoRecommendedLogoKey()];
+      const choices = [["auto", { ...recommended, name: `Auto — ${recommended.name}` }], ...Object.entries(logoInventory)];
+      logoPickerMenu.innerHTML = "";
+      choices.forEach(([key, logo]) => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = `logo-picker-option${key === (logoChoice === "auto" ? "auto" : selectedKey) ? " active" : ""}`;
+        option.setAttribute("role", "option");
+        option.setAttribute("aria-selected", key === (logoChoice === "auto" ? "auto" : selectedKey) ? "true" : "false");
+        const label = document.createElement("span");
+        label.textContent = key === "auto" ? `${logo.name} (recommended)` : logo.name;
         const image = document.createElement("img");
         image.src = logo.sourceUrl;
         image.alt = logo.name;
-        visual.appendChild(image);
-
-        const label = document.createElement("span");
-        label.textContent = logo.file;
-        card.append(visual, label);
-        card.addEventListener("click", () => {
+        image.className = `logo-picker-option-image${logo.dark ? " dark" : ""}`;
+        option.append(label, image);
+        option.addEventListener("click", () => {
           logoChoice = key;
           logoChoiceSelect.value = key;
+          logoPicker.open = false;
           render();
         });
-        logoGallery.appendChild(card);
+        logoPickerMenu.appendChild(option);
       });
     }
 
