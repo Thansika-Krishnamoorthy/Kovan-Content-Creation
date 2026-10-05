@@ -1,0 +1,19 @@
+[Unit]
+Description=Kovan V2 animated poster API
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/thansika/Documents/Content creation V2 animation
+ExecStart=/bin/bash -lc 'cd "/home/thansika/Documents/Content creation V2 animation" && "/home/thansika/Documents/Content creation V2 animation/.venv/bin/uvicorn" scripts.poster_api.app:app --host 127.0.0.1 --port 8001'
+Environment=PYTHONUNBUFFERED=1
+Environment=CHROME_BINARY=/usr/bin/google-chrome
+Environment=POSTER_GENERATION_URL=http://127.0.0.1:8001/api/posters/generate
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

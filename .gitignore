@@ -1,3 +1,9 @@
 generated-blog-previews/
 __pycache__/
 *.pyc
+.env.poster-automation
+poster-cron.log
+poster-api.log
+.venv/
+supabase/.temp/
+output/

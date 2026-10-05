@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Kovan V2 animated poster generation daily at 10:00 Asia/Kolkata
+
+[Timer]
+OnCalendar=*-*-* 10:00:00 Asia/Kolkata
+Persistent=true
+Unit=kovan-v2-poster-schedule.service
+
+[Install]
+WantedBy=timers.target
